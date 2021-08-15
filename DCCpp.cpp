@@ -32,11 +32,21 @@ bool DCCpp::start(DGI_SERVER_PARAMS params)
     powerOn = false;
     virtualThreadId = 0;
     virtualThread = CreateThread(nullptr, 0, loop, nullptr, 0, &virtualThreadId);
+
+    tryToConnect:
     success = DCCpp_dlg::runParamDlg();
     if (success)
     {
         success = DCCpp::connect();
-        // TODO: if connection fails, show a message and show again dialog box param
+        if(!success)
+        {
+            char msg[] = "Impossible d'etablire la connexion avec la centrale\nSouhaitez-vous reessayeer ?";
+            int res = MessageBox(DCCpp::wnd, msg, " Connexion echoue", MB_APPLMODAL | MB_RETRYCANCEL | MB_ICONWARNING);
+
+            if(res == IDRETRY) {
+                goto tryToConnect;
+            }
+        }
     }
     return success;
 }
@@ -84,8 +94,6 @@ bool DCCpp::connect()
     {
         return DCCpp::connectToWebSocketServer();
     }
-
-    // TODO: Check message "<DCCpp started>"
     return false;
 }
 

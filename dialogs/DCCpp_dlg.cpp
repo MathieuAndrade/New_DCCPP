@@ -58,7 +58,12 @@ bool CALLBACK DCCpp_dlg::ParamDlgProc(HWND wnd, UINT message, WPARAM wparam, LPA
             {
                 success = true;
                 EndDialog(wnd, 1);
-            } // TODO: Show an alert message
+            }
+            else
+            {
+                char msg[] = "Les parametres que vous avez indiques semblent errones\nVeuillez recommencer";
+                MessageBox(DCCpp::wnd, msg, " Parametres invalides", MB_APPLMODAL | MB_OK | MB_ICONSTOP);
+            }
 
             break;
         case DCCPP_PARAM_DLG_SCAN_BUTTON:
