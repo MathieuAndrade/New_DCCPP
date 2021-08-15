@@ -44,9 +44,22 @@ bool CALLBACK DCCpp_dlg::ParamDlgProc(HWND wnd, UINT message, WPARAM wparam, LPA
             break;
         case DCCPP_PARAM_DLG_CONNECTION_BUTTON:
             DCCpp::detectorsModuleCount = (int)GetDlgItemInt(wnd, DCCPP_PARAM_DLG_S88_EDITTEXT, nullptr, false);
-            GetDlgItemText(wnd, DCCPP_PARAM_DLG_COM_LIST, &DCCpp::comIp, 9);
-            success = true;
-            EndDialog(wnd, 1);
+
+            if (DCCpp::usbMode)
+            {
+                SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), WM_GETTEXT, (WPARAM)20, (LPARAM)DCCpp::comIp);
+            }
+            else
+            {
+                SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_IP_EDITTEXT), WM_GETTEXT, (WPARAM)20, (LPARAM)DCCpp::comIp);
+            }
+
+            if (strlen(DCCpp::comIp) != 0)
+            {
+                success = true;
+                EndDialog(wnd, 1);
+            } // TODO: Show an alert message
+
             break;
         case DCCPP_PARAM_DLG_SCAN_BUTTON:
             SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), CB_RESETCONTENT, 0, 0);
@@ -58,6 +71,28 @@ bool CALLBACK DCCpp_dlg::ParamDlgProc(HWND wnd, UINT message, WPARAM wparam, LPA
                 SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), CB_ADDSTRING, 0, (LPARAM)it->c_str());
             }
             SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), CB_SETCURSEL, 0, 0);
+            break;
+        case DCCPP_PARAM_DLG_USB_RADIO:
+            // Switch controls
+            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), true);
+            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_IP_EDITTEXT), false);
+            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LABEL), true);
+            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_IP_LABEL), false);
+            // Scan work only on USB mode
+            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_SCAN_BUTTON), true);
+
+            DCCpp::usbMode = true;
+            break;
+        case DCCPP_PARAM_DLG_WIFI_RADIO:
+            // Switch controls
+            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_IP_EDITTEXT), true);
+            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), false);
+            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_IP_LABEL), true);
+            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LABEL), false);
+            // Scan work only on USB mode
+            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_SCAN_BUTTON), false);
+
+            DCCpp::usbMode = false;
             break;
         default:
             break;

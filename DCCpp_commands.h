@@ -13,7 +13,8 @@ class DCCpp_commands
     static void parse(const std::string &command);
     static std::string buildCommand(const DCC_CMD_TYPE &cmdType, const CMD_ARG args = nullptr);
     static bool sendCommand(const DCC_CMD_TYPE &cmdType, const CMD_ARG args = nullptr);
-    static void waitCommand();
+    static void waitSerialCommand();
+    static void waitWsCommands(const std::string &message);
 };
 
 #endif // DCCPP_COMMANDS_H

@@ -24,6 +24,10 @@
 #define DCCPP_PARAM_DLG_CANCEL_BUTTON 60531
 #define DCCPP_PARAM_DLG_SCAN_BUTTON 60532
 
+// Labels
+#define DCCPP_PARAM_DLG_COM_LABEL 60540
+#define DCCPP_PARAM_DLG_IP_LABEL 60541
+
 //
 // IDs attached to DCCPP progress dialog
 //

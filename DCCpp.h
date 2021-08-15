@@ -5,6 +5,10 @@
 #ifndef DDGI_DCCPP_H
 #define DDGI_DCCPP_H
 
+#include <ws2tcpip.h>
+#include <websockets/wsclient.h>
+#include <cassert>
+#include <sstream>
 #include <string>
 #include <vector>
 #include "DDGI_Generic_def.h"
@@ -18,8 +22,10 @@ class DCCpp
   public:
     static HWND wnd;
     static HINSTANCE instance;
-    static char comIp;
+    static WebSocket::pointer ws;
+    static char comIp[];
     static HANDLE comPort;
+    static bool usbMode;
     static bool powerOn;
     static unsigned int commandStationStatus;
     static std::string detectorStates;
@@ -30,8 +36,9 @@ class DCCpp
 
     static bool start(DGI_SERVER_PARAMS params);
     static void stop();
-    [[noreturn]] static DWORD WINAPI loop(void*);
+    [[noreturn]] static DWORD WINAPI loop(void *);
     static bool connect();
+    static bool connectToWebSocketServer();
     static bool disconnect();
     static void initS88();
     static bool setLocoSpeed(pDGI_GENERIC_DATA genericData);

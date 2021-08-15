@@ -6,10 +6,10 @@
 #include "DCCpp_commands.h"
 #include "DCCpp_utils.h"
 
-void DCCpp_commands::waitCommand()
+void DCCpp_commands::waitSerialCommand()
 {
     char buffer[512];
-    bool msgClosed = false, result = false;
+    bool msgClosed = false, result;
     DWORD nbOfBytesRead = 0;
     int i = 0;
 
@@ -40,6 +40,13 @@ void DCCpp_commands::waitCommand()
     {
         std::string command(reinterpret_cast<char const *>(buffer));
         DCCpp_commands::parse(command);
+    }
+}
+
+void DCCpp_commands::waitWsCommands(const std::string &message) {
+    if (message[0] == '<' && message[message.size() -1] == '>')
+    {
+        DCCpp_commands::parse(message);
     }
 }
 
@@ -90,14 +97,20 @@ std::string DCCpp_commands::buildCommand(const DCC_CMD_TYPE &cmdType, const CMD_
 
 bool DCCpp_commands::sendCommand(const DCC_CMD_TYPE &cmdType, const CMD_ARG args)
 {
-    int success;
+    int success = 0;
     std::string command = DCCpp_commands::buildCommand(cmdType, args);
     const char *str = command.c_str();
 
-    // success = DCCpp::serial.writeString(str);
-
-    DWORD dwBytesWritten;
-    success = WriteFile(DCCpp::comPort, str, strlen(str), &dwBytesWritten, nullptr);
+    if (DCCpp::usbMode)
+    {
+        DWORD dwBytesWritten;
+        success = WriteFile(DCCpp::comPort, str, strlen(str), &dwBytesWritten, nullptr);
+    }
+    else if (DCCpp::ws->getReadyState() != WebSocket::CLOSED)
+    {
+        DCCpp::ws->send(str);
+        success = 1;
+    }
 
     DCCpp_utils::printDebugMessage("DCCpp_commands::sendCommand : " + command);
     return success == 1;

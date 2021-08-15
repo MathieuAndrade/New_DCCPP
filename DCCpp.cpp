@@ -9,8 +9,10 @@
 // Public vars
 HWND DCCpp::wnd;
 HINSTANCE DCCpp::instance;
-char DCCpp::comIp;
+WebSocket::pointer DCCpp::ws = nullptr;
+char DCCpp::comIp[20];
 HANDLE DCCpp::comPort;
+bool DCCpp::usbMode = true;
 bool DCCpp::powerOn;
 unsigned int DCCpp::commandStationStatus;
 std::string DCCpp::detectorStates;
@@ -53,38 +55,87 @@ void DCCpp::stop()
 {
     while (true)
     {
-        DCCpp_commands::waitCommand();
+        if (DCCpp::usbMode)
+        {
+            DCCpp_commands::waitSerialCommand();
+        }
+        else if (DCCpp::ws != nullptr && DCCpp::ws->getReadyState() != WebSocket::CLOSED)
+        {
+            DCCpp::ws->poll();
+            DCCpp::ws->dispatch(DCCpp_commands::waitWsCommands);
+        }
     }
 }
 
 bool DCCpp::connect()
 {
-    DCCpp::comPort = CreateFile(&DCCpp::comIp, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
+    if (DCCpp::usbMode)
+    {
+        DCCpp::comPort = CreateFile((LPCSTR)&DCCpp::comIp, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
 
-    // TODO: Check message "<DCCpp started>"
-    if(DCCpp::comPort != INVALID_HANDLE_VALUE) {
-        DCCpp_utils::setComParams();
-        DCCpp_utils::setTimeouts(50);
-        return true;
+        if (DCCpp::comPort != INVALID_HANDLE_VALUE)
+        {
+            DCCpp_utils::setComParams();
+            DCCpp_utils::setTimeouts(50);
+            return true;
+        }
+    }
+    else
+    {
+        return DCCpp::connectToWebSocketServer();
     }
 
-    // char result = serial.openDevice(&DCCpp::comIp, 115200);
-    // DCCpp_commands::sendCommand(POWER_ON);
-    // DCCpp::initS88();
+    // TODO: Check message "<DCCpp started>"
     return false;
 }
 
 bool DCCpp::disconnect()
 {
-    bool success;
-    success = DCCpp_commands::sendCommand(POWER_OFF);
-
-    if (success)
+    bool success = false;
+    if (DCCpp::comPort != INVALID_HANDLE_VALUE || DCCpp::comPort != nullptr || DCCpp::ws != nullptr)
     {
-        // serial.closeDevice();
-        CloseHandle(DCCpp::comPort);
+        success = DCCpp_commands::sendCommand(POWER_OFF);
+
+        if (success)
+        {
+            if (DCCpp::usbMode)
+            {
+                CloseHandle(DCCpp::comPort);
+            }
+            else
+            {
+                DCCpp::ws->close();
+                DCCpp::ws = nullptr;
+                WSACleanup();
+            }
+        }
     }
     return success;
+}
+
+bool DCCpp::connectToWebSocketServer()
+{
+    int result;
+    WSADATA wsaData;
+
+    result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (result != 0)
+    {
+        DCCpp_utils::printDebugMessage("WSAStartup Failed.\n");
+        return false;
+    }
+
+    std::stringstream url;
+    url << "ws://" << DCCpp::comIp << ":81";
+    DCCpp::ws = WebSocket::from_url(url.str());
+
+    if (DCCpp::ws == nullptr || DCCpp::ws->getReadyState() != WebSocket::OPEN)
+    {
+        return false;
+    }
+
+    assert(DCCpp::ws);
+    return true;
 }
 
 void DCCpp::initS88()
@@ -100,12 +151,6 @@ void DCCpp::initS88()
     {
         DCCpp::detectorStates.push_back('0');
     }
-
-    /* for (int i = 0; i < (DCCpp::detectorsModuleCount * 8); ++i)
-    {
-        DCCpp::qDetectorStates[i] = 0;
-    }
-     */
 
     DCCpp_commands::sendCommand(INIT_S88, args);
 }
@@ -148,7 +193,8 @@ bool DCCpp::setLocoSpeed(pDGI_GENERIC_DATA genericData)
     return success;
 }
 
-void DCCpp::emergencyStopAllLocos() {
+void DCCpp::emergencyStopAllLocos()
+{
     bool success;
     LOCO_INFOS_IT it;
     CMD_ARG args;
@@ -156,18 +202,20 @@ void DCCpp::emergencyStopAllLocos() {
     for (it = DCCpp::listOfLocoInfos.begin(); it != DCCpp::listOfLocoInfos.end(); ++it)
     {
         args[0] = (it - DCCpp::listOfLocoInfos.begin()) + 1; // Register number used by command station start at 1, so, this is index of loco in list + 1
-        args[1] = it->address;         // Loco address
-        args[2] = -1;         // Loco speed
-        args[3] = it->direction; // Loco forward/backward
+        args[1] = it->address;                               // Loco address
+        args[2] = -1;                                        // Loco speed
+        args[3] = it->direction;                             // Loco forward/backward
         success = DCCpp_commands::sendCommand(LOCO_SPEED, args);
 
-        if(success) {
+        if (success)
+        {
             it->emergencyStopped = true;
         }
     }
 }
 
-void DCCpp::restartAllLocos() {
+void DCCpp::restartAllLocos()
+{
     bool success;
     LOCO_INFOS_IT it;
     CMD_ARG args;
@@ -175,12 +223,13 @@ void DCCpp::restartAllLocos() {
     for (it = DCCpp::listOfLocoInfos.begin(); it != DCCpp::listOfLocoInfos.end(); ++it)
     {
         args[0] = (it - DCCpp::listOfLocoInfos.begin()) + 1; // Register number used by command station start at 1, so, this is index of loco in list + 1
-        args[1] = it->address;         // Loco address
-        args[2] = it->speed;         // Loco speed
-        args[3] = it->direction; // Loco forward/backward
+        args[1] = it->address;                               // Loco address
+        args[2] = it->speed;                                 // Loco speed
+        args[3] = it->direction;                             // Loco forward/backward
         success = DCCpp_commands::sendCommand(LOCO_SPEED, args);
 
-        if(success) {
+        if (success)
+        {
             it->emergencyStopped = false;
         }
     }
@@ -208,9 +257,10 @@ bool DCCpp::setLocoFunction(pDGI_GENERIC_DATA genericData, unsigned int funcMask
 
         DCCpp_utils::saveLocoInfos(index, DCCpp::listOfLocoInfos[index].address, DCCpp::listOfLocoInfos[index].speed, DCCpp::listOfLocoInfos[index].direction, args[1]);
     }
-    else {
+    else
+    {
         args[1] = (int)DCCpp_utils::getLocoFuncValue(0, funcMask);
-        DCCpp_utils::saveLocoInfos(-1, genericData->nAddress,0, 1, args[1]);
+        DCCpp_utils::saveLocoInfos(-1, genericData->nAddress, 0, 1, args[1]);
     }
 
     success = DCCpp_commands::sendCommand(LOCO_FUNCTION, args);
@@ -384,5 +434,3 @@ void DCCpp::handleDetectorUpdate(std::string &command)
         }
     }
 }
-
-
