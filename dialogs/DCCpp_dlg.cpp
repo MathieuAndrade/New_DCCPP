@@ -16,23 +16,44 @@ bool CALLBACK DCCpp_dlg::ParamDlgProc(HWND wnd, UINT message, WPARAM wparam, LPA
     bool success = false;
     std::list<std::string> portList = DCCpp_utils::listPorts();
     std::list<std::string>::iterator it;
+    std::stringstream temp;
 
-    // Add auto mode on top level
-    //  portList.push_front("AUTO");
+    // Convert int number of s88 modules to string
+    std::string s = std::to_string(DCCpp::detectorsModuleCount);
+    char const *count = s.c_str();
 
     switch (message)
     {
     case WM_INITDIALOG:
-        SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_USB_RADIO), BM_SETCHECK, BST_CHECKED, 1);
-        SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_S88_EDITTEXT), WM_SETTEXT, 0, (LPARAM) "20");
+        if (DCCpp::usbMode)
+        {
+            SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_USB_RADIO), BM_SETCHECK, BST_CHECKED, 1);
+        }
+        else
+        {
+            SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_WIFI_RADIO), BM_SETCHECK, BST_CHECKED, 1);
+        }
+
+        SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_IP_EDITTEXT), WM_SETTEXT, 0, (LPARAM)DCCpp::ipAddress);
+        SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_S88_EDITTEXT), WM_SETTEXT, 0, (LPARAM)count);
 
         // Init combo box list
         for (it = portList.begin(); it != portList.end(); ++it)
         {
             SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), CB_ADDSTRING, 0, (LPARAM)it->c_str());
-        }
-        SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), CB_SETCURSEL, 0, 0);
 
+            if (strstr(DCCpp::comNumber, it->c_str()))
+            {
+                int index = std::distance(portList.begin(), it);
+                SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), CB_SETCURSEL, index, 0);
+            }
+            else
+            {
+                SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), CB_SETCURSEL, 0, 0);
+            }
+        }
+
+        DCCpp_dlg::switchDlgParamMode(wnd);
         break;
 
     case WM_COMMAND:
@@ -45,32 +66,39 @@ bool CALLBACK DCCpp_dlg::ParamDlgProc(HWND wnd, UINT message, WPARAM wparam, LPA
         case DCCPP_PARAM_DLG_CONNECTION_BUTTON:
             DCCpp::detectorsModuleCount = (int)GetDlgItemInt(wnd, DCCPP_PARAM_DLG_S88_EDITTEXT, nullptr, false);
 
+            SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), WM_GETTEXT, (WPARAM)20, (LPARAM)DCCpp::comNumber);
+            SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_IP_EDITTEXT), WM_GETTEXT, (WPARAM)20, (LPARAM)DCCpp::ipAddress);
+
             if (DCCpp::usbMode)
             {
-                SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), WM_GETTEXT, (WPARAM)20, (LPARAM)DCCpp::comIp);
+                if (strlen(DCCpp::comNumber) != 0)
+                {
+                    success = true;
+                    EndDialog(wnd, 1);
+                }
+                else
+                {
+                    DCCpp_dlg::showInvalidParamMsg();
+                }
             }
             else
             {
-                SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_IP_EDITTEXT), WM_GETTEXT, (WPARAM)20, (LPARAM)DCCpp::comIp);
-            }
-
-            if (strlen(DCCpp::comIp) != 0)
-            {
-                success = true;
-                EndDialog(wnd, 1);
-            }
-            else
-            {
-                char msg[] = "Les parametres que vous avez indiques semblent errones\nVeuillez recommencer";
-                MessageBox(DCCpp::wnd, msg, " Parametres invalides", MB_APPLMODAL | MB_OK | MB_ICONSTOP);
+                if (strlen(DCCpp::ipAddress) != 0)
+                {
+                    success = true;
+                    EndDialog(wnd, 1);
+                }
+                else
+                {
+                    DCCpp_dlg::showInvalidParamMsg();
+                }
             }
 
             break;
         case DCCPP_PARAM_DLG_SCAN_BUTTON:
             SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), CB_RESETCONTENT, 0, 0);
+
             portList = DCCpp_utils::listPorts();
-            // Add auto mode on top level
-            //  portList.push_front("AUTO");
             for (it = portList.begin(); it != portList.end(); ++it)
             {
                 SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), CB_ADDSTRING, 0, (LPARAM)it->c_str());
@@ -78,26 +106,12 @@ bool CALLBACK DCCpp_dlg::ParamDlgProc(HWND wnd, UINT message, WPARAM wparam, LPA
             SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), CB_SETCURSEL, 0, 0);
             break;
         case DCCPP_PARAM_DLG_USB_RADIO:
-            // Switch controls
-            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), true);
-            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_IP_EDITTEXT), false);
-            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LABEL), true);
-            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_IP_LABEL), false);
-            // Scan work only on USB mode
-            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_SCAN_BUTTON), true);
-
             DCCpp::usbMode = true;
+            DCCpp_dlg::switchDlgParamMode(wnd);
             break;
         case DCCPP_PARAM_DLG_WIFI_RADIO:
-            // Switch controls
-            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_IP_EDITTEXT), true);
-            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), false);
-            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_IP_LABEL), true);
-            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LABEL), false);
-            // Scan work only on USB mode
-            EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_SCAN_BUTTON), false);
-
             DCCpp::usbMode = false;
+            DCCpp_dlg::switchDlgParamMode(wnd);
             break;
         default:
             break;
@@ -112,4 +126,34 @@ bool CALLBACK DCCpp_dlg::ParamDlgProc(HWND wnd, UINT message, WPARAM wparam, LPA
     }
 
     return success;
+}
+
+void DCCpp_dlg::showInvalidParamMsg()
+{
+    char msg[] = "Les parametres que vous avez indiques semblent errones\nVeuillez recommencer";
+    MessageBox(DCCpp::wnd, msg, " Parametres invalides", MB_APPLMODAL | MB_OK | MB_ICONSTOP);
+}
+
+void DCCpp_dlg::switchDlgParamMode(HWND wnd)
+{
+    if (DCCpp::usbMode)
+    {
+        // Switch controls
+        EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), true);
+        EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_IP_EDITTEXT), false);
+        EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LABEL), true);
+        EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_IP_LABEL), false);
+        // Scan work only on USB mode
+        EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_SCAN_BUTTON), true);
+    }
+    else
+    {
+        // Switch controls
+        EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_IP_EDITTEXT), true);
+        EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), false);
+        EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_IP_LABEL), true);
+        EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LABEL), false);
+        // Scan work only on USB mode
+        EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_SCAN_BUTTON), false);
+    }
 }

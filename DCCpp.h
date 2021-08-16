@@ -23,7 +23,8 @@ class DCCpp
     static HWND wnd;
     static HINSTANCE instance;
     static WebSocket::pointer ws;
-    static char comIp[];
+    static char comNumber[];
+    static char ipAddress[];
     static HANDLE comPort;
     static bool usbMode;
     static bool powerOn;

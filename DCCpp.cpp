@@ -10,7 +10,8 @@
 HWND DCCpp::wnd;
 HINSTANCE DCCpp::instance;
 WebSocket::pointer DCCpp::ws = nullptr;
-char DCCpp::comIp[20];
+char DCCpp::comNumber[5];
+char DCCpp::ipAddress[20];
 HANDLE DCCpp::comPort;
 bool DCCpp::usbMode = true;
 bool DCCpp::powerOn;
@@ -29,6 +30,8 @@ bool DCCpp::start(DGI_SERVER_PARAMS params)
 {
     bool success;
     DCCpp::wnd = params.hMainWindow;
+    DCCpp_utils::getDCCppParams();
+
     powerOn = false;
     virtualThreadId = 0;
     virtualThread = CreateThread(nullptr, 0, loop, nullptr, 0, &virtualThreadId);
@@ -47,6 +50,10 @@ bool DCCpp::start(DGI_SERVER_PARAMS params)
                 goto tryToConnect;
             }
         }
+    }
+
+    if(success) {
+        DCCpp_utils::saveAllDCCppParams();
     }
     return success;
 }
@@ -81,7 +88,7 @@ bool DCCpp::connect()
 {
     if (DCCpp::usbMode)
     {
-        DCCpp::comPort = CreateFile((LPCSTR)&DCCpp::comIp, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
+        DCCpp::comPort = CreateFile((LPCSTR)&DCCpp::comNumber, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
 
         if (DCCpp::comPort != INVALID_HANDLE_VALUE)
         {
@@ -134,7 +141,7 @@ bool DCCpp::connectToWebSocketServer()
     }
 
     std::stringstream url;
-    url << "ws://" << DCCpp::comIp << ":81";
+    url << "ws://" << DCCpp::ipAddress << ":81";
     DCCpp::ws = WebSocket::from_url(url.str());
 
     if (DCCpp::ws == nullptr || DCCpp::ws->getReadyState() != WebSocket::OPEN)

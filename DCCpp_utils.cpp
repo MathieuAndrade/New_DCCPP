@@ -4,9 +4,9 @@
 
 #include <windows.h>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <algorithm>
+#include <cstring>
 #include "DCCpp_utils.h"
 
 void DCCpp_utils::printDebugMessage(const std::string &msg)
@@ -236,4 +236,27 @@ std::list<std::string> DCCpp_utils::listPorts()
         }
     }
     return portList;
+}
+
+void DCCpp_utils::saveAllDCCppParams()
+{
+    WritePrivateProfileString("Default", "com", DCCpp::comNumber, "dccpp_config.ini");
+    WritePrivateProfileString("Default", "ip", DCCpp::ipAddress, "dccpp_config.ini");
+
+    WritePrivateProfileString("Default", "mode", DCCpp::usbMode ? "true": "false", "dccpp_config.ini");
+
+    std::string s = std::to_string(DCCpp::detectorsModuleCount);
+    char const *count = s.c_str();
+    WritePrivateProfileString("Default", "s88_modules", count, "dccpp_config.ini");
+}
+
+void DCCpp_utils::getDCCppParams() {
+    char temp[6];
+    GetPrivateProfileString("Default", "mode", "true", temp, 6, "dccpp_config.ini");
+    DCCpp::usbMode = (std::strcmp(temp, "true") == 0);
+
+    GetPrivateProfileString("Default", "com", "", DCCpp::comNumber, 5, "dccpp_config.ini");
+    GetPrivateProfileString("Default", "ip", "", DCCpp::ipAddress, 20, "dccpp_config.ini");
+
+    DCCpp::detectorsModuleCount = GetPrivateProfileInt("Default", "s88_modules", 8, "dccpp_config.ini");
 }

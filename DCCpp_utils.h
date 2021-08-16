@@ -24,6 +24,8 @@ class DCCpp_utils
     static void setTimeouts(DWORD timeout);
     static std::list<std::string> listPorts();
     static void setComParams();
+    static void saveAllDCCppParams();
+    static void getDCCppParams();
 };
 
 #endif // DCCPP_UTILS_H
