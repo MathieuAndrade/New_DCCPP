@@ -8,11 +8,6 @@
 
 #define DGI_MAX_DATA_WORDS 5
 #define DGI_MAX_DATA_ITEMS 8
-#define MAX_NB_RESPONSES 6
-#define MAX_NB_CMD_DATA 8
-#define MAX_STATION_TYPE_LEN 32
-#define MAX_VERSION_STRING_LEN 32
-#define MAX_NB_DCCpp_LOC_REGS 12
 
 #define DLL_NAME "DCCpp"
 #define DLL_VERSION "0.0.1"
@@ -252,4 +247,16 @@ typedef enum {
     TRACK_POWER_ON,
     TRACK_EMERGENCY_STOP,
     DETECTOR_INFO,
+    CMD_STATION_VERSION,
+    TURNOUT_EVENT,
+    LOCO_SPEED_EVENT,
+    LOCO_FUNCTION_EVENT,
 } CMD_STATION_FB_TYPE; // Type of commands feedback send by command station
+
+typedef struct {
+    DCC_CMD_TYPE cmdType;
+    CMD_STATION_FB_TYPE fbCmdType;
+    CMD_ARG args;
+} CMD_WAITING_RESPONSE;
+typedef std::vector<CMD_WAITING_RESPONSE> CMD_WT_RSP_VECTOR;
+typedef CMD_WT_RSP_VECTOR::iterator CMD_WT_RSP_IT;

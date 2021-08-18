@@ -26,6 +26,7 @@ class DCCpp
     static char comNumber[];
     static char ipAddress[];
     static HANDLE comPort;
+    static std::string version;
     static bool usbMode;
     static bool powerOn;
     static unsigned int commandStationStatus;
@@ -50,6 +51,7 @@ class DCCpp
     static void handleStandaloneCommands(STANDALONE_CMD_TYPE cmdType, int feedbackMsgIndex);
     static void handleCommandStationFb(CMD_STATION_FB_TYPE cmdType, int feedbackMsgIndex);
     static void handleCommandStationStatus(int state);
+    static void handleCommandStationVersion(std::string &command);
     static void handleDetectorUpdate(std::string &command);
 };
 

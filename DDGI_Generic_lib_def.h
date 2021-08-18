@@ -8,6 +8,8 @@ extern "C" __declspec(dllexport) bool DDGL_StartServer(DGI_SERVER_PARAMS *server
 
 extern "C" __declspec(dllexport) bool DDGL_StopServer(DGI_SERVER_PARAMS *serverParams);
 
+extern "C" __declspec(dllexport) bool DDGL_DisplayServer(DGI_SERVER_PARAMS *serverParams);
+
 extern "C" __declspec(dllexport) bool DDGL_GetNextExpectedResponse(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_RCV_DATA genericRcvData);
 
 extern "C" __declspec(dllexport) bool DDGL_GetNextUnExpectedMessage(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_RCV_DATA genericRcvData);
@@ -53,8 +55,6 @@ extern "C" __declspec(dllexport) bool DDGL_OperationModeProgramming(pDGI_SERVER_
 extern "C" __declspec(dllexport) bool DDGL_LocoInfoRequest(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData);
 
 extern "C" __declspec(dllexport) bool DDGL_AccessoryInfoRequest(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData);
-
-extern "C" __declspec(dllexport) bool DDGL_DisplayServer(DGI_SERVER_PARAMS *serverParams);
 
 extern "C" __declspec(dllexport) bool DDGL_DisplayError(DGI_SERVER_PARAMS *serverParams);
 

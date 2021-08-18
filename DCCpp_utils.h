@@ -5,8 +5,9 @@
 #ifndef DCCPP_UTILS_H
 #define DCCPP_UTILS_H
 
-#include "DCCpp.h"
 #include <list>
+#include "DCCpp.h"
+#include "DCCpp_commands.h"
 
 class DCCpp_utils
 {
@@ -15,6 +16,9 @@ class DCCpp_utils
     static int saveFeedbackMsg(S_DCC_CMD_TAG *cmdTag, FEEDBACK_MSG_VECTOR &list);
     static FEEDBACK_MSG_IT findFeedbackMsg(const FEEDBACK_MSG &cmdTag, FEEDBACK_MSG_VECTOR &list);
     static bool removeFeedbackMsg(const FEEDBACK_MSG &cmdTag, FEEDBACK_MSG_VECTOR &list);
+    static bool saveCmdWtRsp(DCC_CMD_TYPE cmdType, CMD_STATION_FB_TYPE fbCmdType, const CMD_ARG args = nullptr);
+    static FEEDBACK_MSG_IT findCmdWtRsp(const CMD_WAITING_RESPONSE &cmdWtRsp);
+    static bool removeCmdWtRsp(const CMD_WT_RSP_IT &cmdWtRsp);
     static void removeCharsFromString(std::string &str, char *charsToRemove);
     static unsigned int ascii2Hex(const unsigned char *str);
     static bool copyFbMsgToGenericData(pDGI_GENERIC_RCV_DATA &genericRcvData, FEEDBACK_MSG_VECTOR &list);

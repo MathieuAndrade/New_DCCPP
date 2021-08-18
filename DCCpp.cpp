@@ -2,9 +2,9 @@
 // Created by Mathieu Andrade on 23/05/2021.
 //
 
+#include <regex>
 #include "DCCpp.h"
 #include <dialogs/DCCpp_dlg.cpp>
-#include "DCCpp_commands.h"
 
 // Public vars
 HWND DCCpp::wnd;
@@ -13,11 +13,12 @@ WebSocket::pointer DCCpp::ws = nullptr;
 char DCCpp::comNumber[5];
 char DCCpp::ipAddress[20];
 HANDLE DCCpp::comPort;
+std::string DCCpp::version;
 bool DCCpp::usbMode = true;
 bool DCCpp::powerOn;
 unsigned int DCCpp::commandStationStatus;
 std::string DCCpp::detectorStates;
-int DCCpp::detectorsModuleCount = 20; // 64 detectors = modulesCount * 8 (8 * 8) || 16 nibbles = modulesCount * 8 (2 * 8) || By default set to 64 detectors
+int DCCpp::detectorsModuleCount = 8; // 64 detectors = modulesCount * 8 (8 * 8) || 16 nibbles = modulesCount * 8 (2 * 8) || By default set to 64 detectors
 FEEDBACK_MSG_VECTOR DCCpp::listOfFeedbackMsg;
 FEEDBACK_MSG_VECTOR DCCpp::listOfUnexpectedFbMsg;
 LOCO_INFOS_VECTOR DCCpp::listOfLocoInfos;
@@ -41,18 +42,37 @@ bool DCCpp::start(DGI_SERVER_PARAMS params)
     if (success)
     {
         success = DCCpp::connect();
-        if(!success)
-        {
-            char msg[] = "Impossible d'etablire la connexion avec la centrale\nSouhaitez-vous reessayeer ?";
-            int res = MessageBox(DCCpp::wnd, msg, " Connexion echoue", MB_APPLMODAL | MB_RETRYCANCEL | MB_ICONWARNING);
 
-            if(res == IDRETRY) {
+        if (success)
+        {
+            int attempts = 0;
+            do
+            {
+                DCCpp_commands::sendCommand(CMD_STATION_VERSION_REQUEST);
+                attempts++;
+                Sleep(200);
+            } while (attempts < 3 && DCCpp::version.empty());
+
+            if (attempts >= 3 && DCCpp::version.empty())
+            {
+                success = false;
+            }
+        }
+
+        if (!success)
+        {
+            std::string msg = "Impossible d'etablire la connexion avec la centrale\nSouhaitez-vous reessayeer ?";
+            int res = MessageBox(DCCpp::wnd, msg.c_str(), " Connexion echoue", MB_APPLMODAL | MB_RETRYCANCEL | MB_ICONWARNING);
+
+            if (res == IDRETRY)
+            {
                 goto tryToConnect;
             }
         }
     }
 
-    if(success) {
+    if (success)
+    {
         DCCpp_utils::saveAllDCCppParams();
     }
     return success;
@@ -81,6 +101,8 @@ void DCCpp::stop()
             DCCpp::ws->poll();
             DCCpp::ws->dispatch(DCCpp_commands::waitWsCommands);
         }
+
+        DCCpp_commands::parse();
     }
 }
 
@@ -94,6 +116,7 @@ bool DCCpp::connect()
         {
             DCCpp_utils::setComParams();
             DCCpp_utils::setTimeouts(50);
+            Sleep(2000);
             return true;
         }
     }
@@ -123,6 +146,8 @@ bool DCCpp::disconnect()
                 DCCpp::ws = nullptr;
                 WSACleanup();
             }
+
+            DCCpp::version.clear();
         }
     }
     return success;
@@ -383,6 +408,14 @@ void DCCpp::handleCommandStationStatus(int state)
         DCCpp::powerOn = false;
         break;
     }
+}
+
+void DCCpp::handleCommandStationVersion(std::string &command)
+{
+    const std::regex reg("\\V.*?\\ ");
+    std::cmatch match;
+    std::regex_search(command.c_str(), match, reg);
+    DCCpp::version = match[0].str();
 }
 
 void DCCpp::handleDetectorUpdate(std::string &command)

@@ -48,6 +48,27 @@ __declspec(dllexport) bool DDGL_StopServer(DGI_SERVER_PARAMS *serverParams)
     return true;
 }
 
+__declspec(dllexport) bool DDGL_DisplayServer(DGI_SERVER_PARAMS *serverParams)
+{
+    // DCCpp_utils::printDebugMessage("DDGL_DisplayServer");
+    std::stringstream msg;
+
+    if (DCCpp::comPort != INVALID_HANDLE_VALUE || DCCpp::comPort != nullptr || DCCpp::ws != nullptr)
+    {
+        msg << "Mode : " << (DCCpp::usbMode ? "USB" : "WIFI") << '\n';
+        msg << " " << '\n';
+        msg << (DCCpp::usbMode ? "COM port : " : "Adress IP : ") << (DCCpp::usbMode ? DCCpp::comNumber : DCCpp::ipAddress) << '\n';
+        msg << " " << '\n';
+        msg << "Version : " << DCCpp::version << '\n';
+        msg << " " << '\n';
+        msg << "Nombre de modules S88 : " << DCCpp::detectorsModuleCount  << '\n';
+
+        MessageBox(DCCpp::wnd, msg.str().c_str(), "Interface DCCPP", MB_APPLMODAL | MB_OK | MB_ICONINFORMATION);
+    }
+
+    return true;
+}
+
 __declspec(dllexport) bool DDGL_GetNextExpectedResponse(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_RCV_DATA genericRcvData)
 {
     bool result = false;
@@ -239,12 +260,6 @@ __declspec(dllexport) bool DDGL_SetF0F12(pDGI_SERVER_PARAMS serverParams, pDGI_G
 __declspec(dllexport) bool DDGL_DisplayError(DGI_SERVER_PARAMS *serverParams)
 {
     DCCpp_utils::printDebugMessage("DDGL_DisplayError");
-    return true;
-}
-
-__declspec(dllexport) bool DDGL_DisplayServer(DGI_SERVER_PARAMS *serverParams)
-{
-    DCCpp_utils::printDebugMessage("DDGL_DisplayServer");
     return true;
 }
 

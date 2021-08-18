@@ -243,14 +243,15 @@ void DCCpp_utils::saveAllDCCppParams()
     WritePrivateProfileString("Default", "com", DCCpp::comNumber, "dccpp_config.ini");
     WritePrivateProfileString("Default", "ip", DCCpp::ipAddress, "dccpp_config.ini");
 
-    WritePrivateProfileString("Default", "mode", DCCpp::usbMode ? "true": "false", "dccpp_config.ini");
+    WritePrivateProfileString("Default", "mode", DCCpp::usbMode ? "true" : "false", "dccpp_config.ini");
 
     std::string s = std::to_string(DCCpp::detectorsModuleCount);
     char const *count = s.c_str();
     WritePrivateProfileString("Default", "s88_modules", count, "dccpp_config.ini");
 }
 
-void DCCpp_utils::getDCCppParams() {
+void DCCpp_utils::getDCCppParams()
+{
     char temp[6];
     GetPrivateProfileString("Default", "mode", "true", temp, 6, "dccpp_config.ini");
     DCCpp::usbMode = (std::strcmp(temp, "true") == 0);
@@ -259,4 +260,28 @@ void DCCpp_utils::getDCCppParams() {
     GetPrivateProfileString("Default", "ip", "", DCCpp::ipAddress, 20, "dccpp_config.ini");
 
     DCCpp::detectorsModuleCount = GetPrivateProfileInt("Default", "s88_modules", 8, "dccpp_config.ini");
+}
+
+bool DCCpp_utils::saveCmdWtRsp(const DCC_CMD_TYPE cmdType, const CMD_STATION_FB_TYPE fbCmdType, const CMD_ARG args)
+{
+    if (args != nullptr)
+    {
+        DCCpp_commands::listOfCmdWaitingResp.push_back({cmdType, fbCmdType, {args[0], args[1], args[2], args[3], args[4]}});
+    }
+    else
+    {
+        DCCpp_commands::listOfCmdWaitingResp.push_back({cmdType, fbCmdType});
+    }
+    return true;
+}
+
+FEEDBACK_MSG_IT DCCpp_utils::findCmdWtRsp(const CMD_WAITING_RESPONSE &cmdWtRsp)
+{
+    return FEEDBACK_MSG_IT();
+}
+
+bool DCCpp_utils::removeCmdWtRsp(const CMD_WT_RSP_IT &cmdWtRsp)
+{
+    DCCpp_commands::listOfCmdWaitingResp.erase(cmdWtRsp);
+    return true;
 }
