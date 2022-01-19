@@ -166,12 +166,19 @@ bool DCCpp::connectToWebSocketServer()
     }
 
     std::stringstream url;
-    url << "ws://" << DCCpp::ipAddress << ":81";
-    DCCpp::ws = WebSocket::from_url(url.str());
+    url << "ws://" << DCCpp::ipAddress;
+
+    // Check common WS server at first time
+    DCCpp::ws = WebSocket::from_url(url.str() += ":81");
 
     if (DCCpp::ws == nullptr || DCCpp::ws->getReadyState() != WebSocket::OPEN)
     {
-        return false;
+        // If common WS server fail, check new url
+        DCCpp::ws = WebSocket::from_url(url.str() += "/ws");
+        if (DCCpp::ws == nullptr || DCCpp::ws->getReadyState() != WebSocket::OPEN)
+        {
+            return false;
+        }
     }
 
     assert(DCCpp::ws);
