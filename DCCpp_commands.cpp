@@ -109,7 +109,7 @@ std::string DCCpp_commands::buildCommand(const DCC_CMD_TYPE &cmdType, const CMD_
             << " " << args[0] << " " << 1 << ">"; // 1 for hexadecimal format
         break;
     case PING:
-        cmd << "<pa>";
+        cmd << "<g1>";
         break;
     default:
         cmd << "";
@@ -164,7 +164,7 @@ void DCCpp_commands::parse()
         {
             DCCpp::handleCommandStationStatus(1);
         }
-        else if (command.rfind("<pa>", 1) == 0)
+        else if (command.rfind("<g1>", 1) == 0)
         {
             DCCpp_commands::sendCommand(PING);
         }
