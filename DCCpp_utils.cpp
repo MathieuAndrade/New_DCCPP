@@ -62,6 +62,9 @@ bool DCCpp_utils::copyFbMsgToGenericData(pDGI_GENERIC_RCV_DATA &genericRcvData, 
     {
         genericRcvData->xDataItem[i].nAddress = list[0].xDataItem[i].nAddress;
         genericRcvData->xDataItem[i].hData[0] = list[0].xDataItem[i].hData[0];
+        genericRcvData->xDataItem[i].hData[1] = list[0].xDataItem[i].hData[1];
+        genericRcvData->xDataItem[i].hData[2] = list[0].xDataItem[i].hData[2];
+        genericRcvData->xDataItem[i].hData[3] = list[0].xDataItem[i].hData[3];
     }
 
     return true;
