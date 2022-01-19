@@ -465,8 +465,8 @@ void DCCpp::handleDetectorUpdate(std::string &command)
 
             for (int i = 0; i < changes; i++)
             {
-                // Get position of nibble changed accorded with offset
-                // Offset is used if the nb of S88 changes is to high
+                // Get position of nibble changed accorded with offset,
+                // Offset is used if the nb of S88 changes is too high
                 int nibbleIndex = posOfs88NibblesChanges[i + offset];
 
                 // Get ascii state in list and convert it to hex
@@ -478,7 +478,7 @@ void DCCpp::handleDetectorUpdate(std::string &command)
                 DCCpp::listOfUnexpectedFbMsg[FbIndex].xDataItem[i].hData[0] = hexState;
             }
 
-            // Finally set number of changes
+            // Finally, set number of changes
             DCCpp::listOfUnexpectedFbMsg[FbIndex].nNbDataItems = changes;
             // Decreases the nb of changes states according to nb of changes reported
             nbOfChanges = nbOfChanges - changes;
