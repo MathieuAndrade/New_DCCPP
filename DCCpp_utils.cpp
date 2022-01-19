@@ -278,13 +278,63 @@ bool DCCpp_utils::saveCmdWtRsp(const DCC_CMD_TYPE cmdType, const CMD_STATION_FB_
     return true;
 }
 
-FEEDBACK_MSG_IT DCCpp_utils::findCmdWtRsp(const CMD_WAITING_RESPONSE &cmdWtRsp)
+bool DCCpp_utils::findCmdWtRsp(CMD_WT_RSP_IT &it, CMD_STATION_FB_TYPE fbType, std::string &cmd, int nbOfArgs, int argsOffset, CMD_ARG args)
 {
-    return FEEDBACK_MSG_IT();
+    bool found = false;
+    DCCpp_utils::getArgs(cmd, args);
+
+    for (it = DCCpp_commands::listOfCmdWaitingResp.begin(); it != DCCpp_commands::listOfCmdWaitingResp.end(); ++it)
+    {
+        if (it->fbCmdType == fbType)
+        {
+            // Command type found
+            // Check if args corresponding to target
+            for (int i = argsOffset; i < nbOfArgs; i++)
+            {
+                if (it->args[i] == args[i])
+                {
+                    found = true; // If args corresponding to target, is good
+                }
+                else
+                {
+                    found = false; // If args not corresponding to target
+                    break;         // stop loop
+                }
+            }
+
+            if (found)
+            {
+                break; // Element found, stop loop
+            }
+        }
+    }
+
+    return found;
 }
 
 bool DCCpp_utils::removeCmdWtRsp(const CMD_WT_RSP_IT &cmdWtRsp)
 {
     DCCpp_commands::listOfCmdWaitingResp.erase(cmdWtRsp);
     return true;
+}
+
+void DCCpp_utils::getArgs(std::string &str, CMD_ARG args)
+{
+    int index = 0;
+    char charStr[str.length() + 1];
+
+    // copying the contents of the
+    // string to char array
+    strcpy(charStr, str.c_str());
+
+    char *token = std::strtok(charStr, " ");
+
+    // Keep printing tokens while one of the
+    // delimiters present in str[].
+    while (token != nullptr)
+    {
+        args[index] = std::stoi(token);
+        token = strtok(nullptr, " ");
+        index++;
+    }
 }

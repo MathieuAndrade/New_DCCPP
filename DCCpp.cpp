@@ -363,6 +363,10 @@ void DCCpp::handleCommandStationFb(CMD_STATION_FB_TYPE cmdType, int feedbackMsgI
     case DETECTOR_INFO:
         DCCpp::listOfUnexpectedFbMsg[feedbackMsgIndex].nRdCommand = RCV_FEEDBACK_BROADCAST;
         break;
+    case LOCO_SPEED_EVENT:
+    case LOCO_FUNCTION_EVENT:
+        DCCpp::listOfUnexpectedFbMsg[feedbackMsgIndex].nRdCommand = RCV_LOCO_OPER_BY_ANOTHER_DEVICE;
+        break;
     default:
         break;
     }
@@ -488,4 +492,51 @@ void DCCpp::handleDetectorUpdate(std::string &command)
             nbOfReports--;
         }
     }
+}
+
+void DCCpp::handleTurnoutEvent(std::string &command)
+{
+    bool found;
+    CMD_WT_RSP_IT it;
+    CMD_ARG args;
+
+    DCCpp_utils::removeCharsFromString(command, (char *)"<H>");
+    found = DCCpp_utils::findCmdWtRsp(it, TURNOUT_EVENT, command, 2, 0, args);
+
+    if (found)
+    {
+        DCCpp_utils::removeCmdWtRsp(it);
+    }
+    // else is not a command fired by CDM-Rail,
+    // so he needs a feedback to handle this event fired by another controller
+    // but for the moment, this type of feedback is not implemented in CDM-Rail
+}
+
+void DCCpp::handleLocoEvent(std::string &command, CMD_STATION_FB_TYPE fbCmdType)
+{
+    bool found;
+    // int locoAddress, locoIndex;
+    // int fbMsgIndex;
+    CMD_WT_RSP_IT it;
+    CMD_ARG args;
+    // DCC_CMD_TAG feedbackMsg;
+
+    if (fbCmdType == LOCO_SPEED_EVENT)
+    {
+        DCCpp_utils::removeCharsFromString(command, (char *)"<T>");
+        found = DCCpp_utils::findCmdWtRsp(it, LOCO_SPEED_EVENT, command, 3, 1, args);
+    }
+    else
+    {
+        DCCpp_utils::removeCharsFromString(command, (char *)"<F>");
+        found = DCCpp_utils::findCmdWtRsp(it, LOCO_FUNCTION_EVENT, command, 3, 1, args);
+    }
+
+    if (found)
+    {
+        DCCpp_utils::removeCmdWtRsp(it);
+    }
+    // else is not a command fired by CDM-Rail,
+    // so he needs a feedback to handle this event fired by another controller
+    // Work in progress
 }

@@ -53,6 +53,8 @@ class DCCpp
     static void handleCommandStationStatus(int state);
     static void handleCommandStationVersion(std::string &command);
     static void handleDetectorUpdate(std::string &command);
+    static void handleTurnoutEvent(std::string &command);
+    static void handleLocoEvent(std::string &command, CMD_STATION_FB_TYPE fbCmdType);
 };
 
 #endif // DDGI_DCCPP_H

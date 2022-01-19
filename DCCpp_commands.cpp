@@ -172,6 +172,18 @@ void DCCpp_commands::parse()
         {
             DCCpp::handleDetectorUpdate(command);
         }
+        else if (command.rfind("<H", 0) == 0)
+        {
+            DCCpp::handleTurnoutEvent(command);
+        }
+        else if (command.rfind("<T", 0) == 0 && command.size() > 9)
+        {
+            DCCpp::handleLocoEvent(command, LOCO_SPEED_EVENT);
+        }
+        else if (command.rfind("<F", 0) == 0)
+        {
+            DCCpp::handleLocoEvent(command, LOCO_FUNCTION_EVENT);
+        }
         else if (command.rfind("<iDCCpp", 0) == 0)
         {
             DCCpp::handleCommandStationVersion(command);
