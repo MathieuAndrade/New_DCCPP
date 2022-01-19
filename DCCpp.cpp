@@ -368,6 +368,10 @@ void DCCpp::handleStandaloneCommands(STANDALONE_CMD_TYPE cmdType, int feedbackMs
         DCCpp::listOfFeedbackMsg[feedbackMsgIndex].nRdCommand = RCV_ACCESSORY_INFO;
         DCCpp::listOfFeedbackMsg[feedbackMsgIndex].nCompletionCode = DGI_COMP_OK;
         break;
+    case CMD_LOCO_INFO_REQUEST:
+        DCCpp::listOfFeedbackMsg[feedbackMsgIndex].nRdCommand = RCV_NORMAL_LOCO_INFO;
+        DCCpp::listOfFeedbackMsg[feedbackMsgIndex].nCompletionCode = DGI_COMP_OK_RD;
+        break;
     default:
         break;
     }
