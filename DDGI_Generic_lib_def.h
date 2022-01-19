@@ -30,6 +30,8 @@ extern "C" __declspec(dllexport) bool DDGL_DetectorInfoRequest(pDGI_SERVER_PARAM
 
 extern "C" __declspec(dllexport) bool DDGL_SetAccessoryState(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData);
 
+extern "C" __declspec(dllexport) bool DDGL_LocoInfoRequest(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData);
+
 extern "C" __declspec(dllexport) bool DDGL_SetSpeed(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData);
 
 extern "C" __declspec(dllexport) bool DDGL_SetF0F4(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData);
@@ -51,8 +53,6 @@ extern "C" __declspec(dllexport) bool DDGL_ServiceModeResultRequest(pDGI_SERVER_
 extern "C" __declspec(dllexport) bool DDGL_DirectCVWrite(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData);
 
 extern "C" __declspec(dllexport) bool DDGL_OperationModeProgramming(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData);
-
-extern "C" __declspec(dllexport) bool DDGL_LocoInfoRequest(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData);
 
 extern "C" __declspec(dllexport) bool DDGL_AccessoryInfoRequest(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData);
 

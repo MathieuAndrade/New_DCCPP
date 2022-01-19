@@ -193,6 +193,33 @@ unsigned int DCCpp_utils::getLocoFuncValue(unsigned int funcValue, unsigned int 
     return value;
 }
 
+int DCCpp_utils::convertLocoFuncValue(int funcValue, int newValue)
+{
+    int value = newValue;
+
+    if (newValue > 127 && newValue < 160)
+    {
+        value = value - 128;
+        value <<= 1;
+        if((value & 32) != 0)
+        {
+            value -= 31;
+        }
+    }
+    else if (newValue > 175 && newValue < 192)
+    {
+        value = value - 176;
+        value = value * 32;
+    }
+    else if (newValue > 159 && newValue < 176)
+    {
+        value = value - 160;
+        value = value * 512;
+    }
+
+    return funcValue ^ value;
+}
+
 void DCCpp_utils::setTimeouts(DWORD timeout)
 {
     COMMTIMEOUTS timeouts;

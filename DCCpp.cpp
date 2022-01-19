@@ -202,6 +202,32 @@ void DCCpp::initS88()
     DCCpp_commands::sendCommand(INIT_S88, args);
 }
 
+bool DCCpp::sendLocoInfo(pDGI_GENERIC_DATA genericData)
+{
+    bool result = false;
+    int fbMsgIndex, locoIndex;
+
+    locoIndex = DCCpp_utils::getLocoInfosIndex(genericData->nAddress);
+
+    if (DCCpp::listOfLocoInfos[locoIndex].dataUpdated)
+    {
+        // Create new feedback message
+        fbMsgIndex = DCCpp_utils::saveFeedbackMsg(genericData->pCmdTag, DCCpp::listOfFeedbackMsg);
+        DCCpp::handleStandaloneCommands(CMD_LOCO_INFO_REQUEST, fbMsgIndex);
+
+        DCCpp::listOfFeedbackMsg[fbMsgIndex].xDataItem[0].nAddress = DCCpp::listOfLocoInfos[locoIndex].address;
+        DCCpp::listOfFeedbackMsg[fbMsgIndex].xDataItem[0].hData[0] = DCCpp::listOfLocoInfos[locoIndex].speed;
+        DCCpp::listOfFeedbackMsg[fbMsgIndex].xDataItem[0].hData[1] = DCCpp::listOfLocoInfos[locoIndex].functions;
+        DCCpp::listOfFeedbackMsg[fbMsgIndex].xDataItem[0].hData[2] = DCCpp::listOfLocoInfos[locoIndex].functions;
+        DCCpp::listOfFeedbackMsg[fbMsgIndex].xDataItem[0].hData[3] = 4095; // Not working for the moment
+
+        DCCpp::listOfLocoInfos[locoIndex].dataUpdated = false;
+        result = true;
+    }
+
+    return result;
+}
+
 bool DCCpp::setLocoSpeed(pDGI_GENERIC_DATA genericData)
 {
     bool success = false;

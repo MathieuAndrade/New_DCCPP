@@ -223,6 +223,14 @@ __declspec(dllexport) bool DDGL_SetAccessoryState(pDGI_SERVER_PARAMS serverParam
     return success;
 }
 
+__declspec(dllexport) bool DDGL_LocoInfoRequest(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
+{
+    // DCCpp_utils::printDebugMessage("DDGL_LocoInfoRequest");
+    // return DCCpp::sendLocoInfo(genericData);
+    // Work in progress
+    return true;
+}
+
 __declspec(dllexport) bool DDGL_SetSpeed(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
 {
     // DCCpp_utils::printDebugMessage("DDGL_SetSpeed");
@@ -329,9 +337,4 @@ __declspec(dllexport) bool DDGL_AccessoryInfoRequest(pDGI_SERVER_PARAMS serverPa
     return true;
 }
 
- __declspec(dllexport) bool DDGL_LocoInfoRequest(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
-{
-    DCCpp_utils::printDebugMessage("DDGL_LocoInfoRequest");
-    return true;
-}
  */

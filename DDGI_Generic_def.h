@@ -244,6 +244,7 @@ typedef enum {
     CMD_EMERGENCY_STOP,
     CMD_STATION_STATUS,
     CMD_TURNOUT_ACTION,
+    CMD_LOCO_INFO_REQUEST,
 } STANDALONE_CMD_TYPE; // Type of commands send by CDM-Rail
 
 typedef enum {
