@@ -3,7 +3,6 @@
 //
 
 #include <windows.h>
-#include <sstream>
 #include <iostream>
 #include "DCCpp.h"
 #include "DDGI_Generic_lib_def.h"
@@ -116,12 +115,15 @@ __declspec(dllexport) bool DDGL_ResumeOperations(pDGI_SERVER_PARAMS serverParams
     bool success;
     int index;
 
-    // DCCpp_utils::printDebugMessage("DDGL_ResumeOperations");
+    DCCpp_utils::printDebugMessage("DDGL_ResumeOperations");
     success = DCCpp_commands::sendCommand(POWER_ON);
-    DCCpp::initS88();
-    DCCpp::restartAllLocos();
 
     if(success) {
+        DCCpp::initS88();
+        // Wait for command station before send locos commands
+        // If locos speed are send immediately, command station not handle it
+        Sleep(1000);
+        DCCpp::restartAllLocos();
         index = DCCpp_utils::saveFeedbackMsg(genericData->pCmdTag, DCCpp::listOfFeedbackMsg);
         DCCpp::handleStandaloneCommands(CMD_OPERATIONS_RESUMED, index);
     }
@@ -171,9 +173,8 @@ __declspec(dllexport) bool DDGL_StopLoco(pDGI_SERVER_PARAMS serverParams, pDGI_G
 
 __declspec(dllexport) bool DDGL_CommandStationVersionRequest(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
 {
-    DCCpp_utils::printDebugMessage("DDGL_CommandStationVersionRequest");
+    // DCCpp_utils::printDebugMessage("DDGL_CommandStationVersionRequest");
     DCCpp_commands::sendCommand(CMD_STATION_VERSION_REQUEST);
-    // TODO: Get version of command station on DLL start
     return true;
 }
 
