@@ -22,7 +22,7 @@ class DCCpp_utils
     static void removeCharsFromString(std::string &str, char *charsToRemove);
     static unsigned int ascii2Hex(const unsigned char *str);
     static bool copyFbMsgToGenericData(pDGI_GENERIC_RCV_DATA &genericRcvData, FEEDBACK_MSG_VECTOR &list);
-    static int saveLocoInfos(int index, int address, int speed, int direction, int functions = -1);
+    static int saveLocoInfos(int index, int address, int speed, int absoluteSpeed, int direction, int functions = -1);
     static unsigned int getLocoFuncValue(unsigned int funcValue, unsigned int funcMask);
     static int getLocoInfosIndex(int address);
     static void setTimeouts(DWORD timeout);

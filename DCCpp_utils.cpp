@@ -121,17 +121,18 @@ unsigned int DCCpp_utils::ascii2Hex(const unsigned char *str)
     return value;
 }
 
-int DCCpp_utils::saveLocoInfos(int index, int address, int speed, int direction, int functions)
+int DCCpp_utils::saveLocoInfos(int index, int address, int speed, int absoluteSpeed, int direction, int functions)
 {
     if (index == -1)
     {
-        DCCpp::listOfLocoInfos.push_back({address, speed, direction, functions});
+        DCCpp::listOfLocoInfos.push_back({address, absoluteSpeed, speed, direction, functions});
         index = (int)DCCpp::listOfLocoInfos.size() - 1; // Get last index of list
     }
     else
     {
         DCCpp::listOfLocoInfos[index].address = address;
         DCCpp::listOfLocoInfos[index].speed = speed;
+        DCCpp::listOfLocoInfos[index].absoluteSpeed = absoluteSpeed;
         DCCpp::listOfLocoInfos[index].direction = direction;
         DCCpp::listOfLocoInfos[index].functions = functions;
     }

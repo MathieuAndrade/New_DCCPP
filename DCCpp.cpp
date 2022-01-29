@@ -101,6 +101,7 @@ void DCCpp::stop()
             DCCpp::ws->poll();
             DCCpp::ws->dispatch(DCCpp_commands::waitWsCommands);
         }
+        // TODO: Check connection state and show alert is connection was closed
 
         DCCpp_commands::parse();
     }
@@ -251,14 +252,14 @@ bool DCCpp::setLocoSpeed(pDGI_GENERIC_DATA genericData)
             {
                 args[0] = index + 1; // Register number used by command station start at 1, so, this is index of loco in list + 1
 
-                DCCpp_utils::saveLocoInfos(index, args[1], args[2], args[3]);
+                DCCpp_utils::saveLocoInfos(index, args[1], genericData->nData[1], args[2], args[3]);
                 success = DCCpp_commands::sendCommand(LOCO_SPEED, args);
             }
         }
         else
         {
             // Save loco info and get register number used by command station if is not already present in list
-            args[0] = DCCpp_utils::saveLocoInfos(-1, args[1], args[2], args[3]);
+            args[0] = DCCpp_utils::saveLocoInfos(-1, args[1], genericData->nData[1], args[2], args[3]);
 
             success = DCCpp_commands::sendCommand(LOCO_SPEED, args);
         }
@@ -328,12 +329,12 @@ bool DCCpp::setLocoFunction(pDGI_GENERIC_DATA genericData, unsigned int funcMask
             args[1] = (int)DCCpp_utils::getLocoFuncValue(genericData->nData[0], funcMask);
         }
 
-        DCCpp_utils::saveLocoInfos(index, DCCpp::listOfLocoInfos[index].address, DCCpp::listOfLocoInfos[index].speed, DCCpp::listOfLocoInfos[index].direction, args[1]);
+        DCCpp_utils::saveLocoInfos(index, DCCpp::listOfLocoInfos[index].address,DCCpp::listOfLocoInfos[index].absoluteSpeed, DCCpp::listOfLocoInfos[index].speed, DCCpp::listOfLocoInfos[index].direction, genericData->nData[0]);
     }
     else
     {
         args[1] = (int)DCCpp_utils::getLocoFuncValue(0, funcMask);
-        DCCpp_utils::saveLocoInfos(-1, genericData->nAddress, 0, 1, args[1]);
+        DCCpp_utils::saveLocoInfos(-1, genericData->nAddress, 0, 0, 1, genericData->nData[0]);
     }
 
     success = DCCpp_commands::sendCommand(LOCO_FUNCTION, args);
@@ -545,11 +546,11 @@ void DCCpp::handleTurnoutEvent(std::string &command)
 void DCCpp::handleLocoEvent(std::string &command, CMD_STATION_FB_TYPE fbCmdType)
 {
     bool found;
-    // int locoAddress, locoIndex;
-    // int fbMsgIndex;
+    int locoAddress, locoIndex;
+    int fbMsgIndex;
     CMD_WT_RSP_IT it;
     CMD_ARG args;
-    // DCC_CMD_TAG feedbackMsg;
+    DCC_CMD_TAG feedbackMsg;
 
     if (fbCmdType == LOCO_SPEED_EVENT)
     {
@@ -566,7 +567,36 @@ void DCCpp::handleLocoEvent(std::string &command, CMD_STATION_FB_TYPE fbCmdType)
     {
         DCCpp_utils::removeCmdWtRsp(it);
     }
-    // else is not a command fired by CDM-Rail,
-    // so he needs a feedback to handle this event fired by another controller
-    // Work in progress
+    else
+    {
+        locoAddress = args[1];
+        locoIndex = DCCpp_utils::getLocoInfosIndex(locoAddress);
+
+        if (locoIndex != -1)
+        {
+            // Create new feedback message
+            feedbackMsg.nCmdTagType = TAG_NONE;
+            fbMsgIndex = DCCpp_utils::saveFeedbackMsg(&feedbackMsg, DCCpp::listOfUnexpectedFbMsg);
+            DCCpp::handleCommandStationFb(fbCmdType, fbMsgIndex);
+            DCCpp::listOfUnexpectedFbMsg[fbMsgIndex].xDataItem[0].nAddress = locoAddress;
+
+            if (fbCmdType == LOCO_SPEED_EVENT)
+            {
+                // Convert speed value
+                int newSpeed = args[3] == 0 ? -args[2] : args[2];
+
+                DCCpp::listOfLocoInfos[locoIndex].speed = newSpeed;
+                DCCpp::listOfLocoInfos[locoIndex].absoluteSpeed = args[2];
+                DCCpp::listOfLocoInfos[locoIndex].direction = args[3];
+                DCCpp::listOfLocoInfos[locoIndex].dataUpdated = true;
+            }
+            else
+            {
+                int newValue = DCCpp_utils::convertLocoFuncValue(DCCpp::listOfLocoInfos[locoIndex].functions, args[2]);
+
+                DCCpp::listOfLocoInfos[locoIndex].functions = newValue;
+                DCCpp::listOfLocoInfos[locoIndex].dataUpdated = true;
+            }
+        }
+    }
 }

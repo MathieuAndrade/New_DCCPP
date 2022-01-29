@@ -208,9 +208,12 @@ typedef FEEDBACK_MSG_VECTOR::iterator FEEDBACK_MSG_IT;
 typedef struct {
     int address;
     int speed;
+    int absoluteSpeed;
     int direction; // 1 = forward, 0 = backward
     int functions; // Stored in byte
     bool emergencyStopped;
+    bool lockedByCDM; // Determines if the locomotive can be driven by an external device or not
+    bool dataUpdated;
 } LOCO_INFOS;
 typedef std::vector<LOCO_INFOS> LOCO_INFOS_VECTOR;
 typedef LOCO_INFOS_VECTOR::iterator LOCO_INFOS_IT;
