@@ -202,6 +202,7 @@ void DCCpp::initS88()
     DCCpp_commands::sendCommand(INIT_S88, args);
 }
 
+/*
 bool DCCpp::sendLocoInfo(pDGI_GENERIC_DATA genericData)
 {
     bool result = false;
@@ -227,6 +228,7 @@ bool DCCpp::sendLocoInfo(pDGI_GENERIC_DATA genericData)
 
     return result;
 }
+ */
 
 bool DCCpp::setLocoSpeed(pDGI_GENERIC_DATA genericData)
 {

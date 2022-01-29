@@ -43,7 +43,7 @@ class DCCpp
     static bool connectToWebSocketServer();
     static bool disconnect();
     static void initS88();
-    static bool sendLocoInfo(pDGI_GENERIC_DATA genericData);
+    // static bool sendLocoInfo(pDGI_GENERIC_DATA genericData);
     static bool setLocoSpeed(pDGI_GENERIC_DATA genericData);
     static bool setLocoFunction(pDGI_GENERIC_DATA genericData, unsigned int funcMask);
     static void emergencyStopAllLocos();
