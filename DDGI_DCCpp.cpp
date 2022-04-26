@@ -36,20 +36,17 @@ __declspec(dllexport) HANDLE DDGL_Register(bool bEnglish, const char **descStrin
 
 __declspec(dllexport) bool DDGL_StartServer(DGI_SERVER_PARAMS *serverParams)
 {
-    //DCCpp_utils::printDebugMessage("DDGL_StartServer");
     return DCCpp::start(*serverParams);
 }
 
 __declspec(dllexport) bool DDGL_StopServer(DGI_SERVER_PARAMS *serverParams)
 {
-    //DCCpp_utils::printDebugMessage("DDGL_StopServer");
     DCCpp::stop();
     return true;
 }
 
 __declspec(dllexport) bool DDGL_DisplayServer(DGI_SERVER_PARAMS *serverParams)
 {
-    // DCCpp_utils::printDebugMessage("DDGL_DisplayServer");
     std::stringstream msg;
 
     if (DCCpp::comPort != INVALID_HANDLE_VALUE || DCCpp::comPort != nullptr || DCCpp::ws != nullptr)
@@ -74,8 +71,6 @@ __declspec(dllexport) bool DDGL_GetNextExpectedResponse(pDGI_SERVER_PARAMS serve
 
     if (!DCCpp::listOfFeedbackMsg.empty())
     {
-        DCCpp_utils::printDebugMessage("Get Next Expected Response");
-
         // Wait until message was copied
         result = DCCpp_utils::copyFbMsgToGenericData(genericRcvData, DCCpp::listOfFeedbackMsg);
 
@@ -95,8 +90,6 @@ __declspec(dllexport) bool DDGL_GetNextUnExpectedMessage(pDGI_SERVER_PARAMS serv
 
     if (!DCCpp::listOfUnexpectedFbMsg.empty())
     {
-        DCCpp_utils::printDebugMessage("Get Next UnExpected Message");
-
         // Wait until message was copied
         result = DCCpp_utils::copyFbMsgToGenericData(genericRcvData, DCCpp::listOfUnexpectedFbMsg); //1977903376
 
@@ -115,7 +108,6 @@ __declspec(dllexport) bool DDGL_ResumeOperations(pDGI_SERVER_PARAMS serverParams
     bool success;
     int index;
 
-    DCCpp_utils::printDebugMessage("DDGL_ResumeOperations");
     success = DCCpp_commands::buildCommand(POWER_ON);
 
     if(success) {
@@ -136,7 +128,6 @@ __declspec(dllexport) bool DDGL_PowerOff(pDGI_SERVER_PARAMS serverParams, pDGI_G
     int index;
     bool success;
 
-    //DCCpp_utils::printDebugMessage("DDGL_PowerOff");
     success = DCCpp_commands::buildCommand(POWER_OFF);
 
     if(success) {
@@ -152,7 +143,6 @@ __declspec(dllexport) bool DDGL_EmergencyStop(pDGI_SERVER_PARAMS serverParams, p
     int index;
     bool success;
 
-    //DCCpp_utils::printDebugMessage("DDGL_EmergencyStop");
     DCCpp::emergencyStopAllLocos();
     success = DCCpp_commands::buildCommand(POWER_OFF);
 
@@ -166,14 +156,12 @@ __declspec(dllexport) bool DDGL_EmergencyStop(pDGI_SERVER_PARAMS serverParams, p
 
 __declspec(dllexport) bool DDGL_StopLoco(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
 {
-    // DCCpp_utils::printDebugMessage("DDGL_StopLoco");
     genericData->nData[1] = 0;
     return DCCpp::setLocoSpeed(genericData);
 }
 
 __declspec(dllexport) bool DDGL_CommandStationVersionRequest(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
 {
-    // DCCpp_utils::printDebugMessage("DDGL_CommandStationVersionRequest");
     DCCpp_commands::buildCommand(CMD_STATION_VERSION_REQUEST);
     return true;
 }
@@ -182,7 +170,6 @@ __declspec(dllexport) bool DDGL_CommandStationStatusRequest(pDGI_SERVER_PARAMS s
 {
     int index;
 
-    //DCCpp_utils::printDebugMessage("DDGL_CommandStationStatusRequest");
     index = DCCpp_utils::saveFeedbackMsg(genericData->pCmdTag, DCCpp::listOfFeedbackMsg);
     DCCpp::handleStandaloneCommands(CMD_STATION_STATUS, index);
     return true;
@@ -191,7 +178,6 @@ __declspec(dllexport) bool DDGL_CommandStationStatusRequest(pDGI_SERVER_PARAMS s
 __declspec(dllexport) bool DDGL_DetectorInfoRequest(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
 {
     // int index;
-    DCCpp_utils::printDebugMessage("DDGL_DetectorInfoRequest");
 
     // index = DCCpp_utils::saveFeedbackMsg(genericData->pCmdTag);
     // DCCpp::handleStandaloneCommands(DETECTOR_INFO, index);
@@ -205,8 +191,6 @@ __declspec(dllexport) bool DDGL_SetAccessoryState(pDGI_SERVER_PARAMS serverParam
     int index;
     bool success = false;
     CMD_ARG args;
-
-    // DCCpp_utils::printDebugMessage("DDGL_SetAccessoryState");
 
     args[0] = genericData->nAddress; // Accessory address
     args[1] = genericData->nData[0] != 0; // Accessory state
@@ -223,7 +207,6 @@ __declspec(dllexport) bool DDGL_SetAccessoryState(pDGI_SERVER_PARAMS serverParam
 
 __declspec(dllexport) bool DDGL_LocoInfoRequest(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
 {
-    // DCCpp_utils::printDebugMessage("DDGL_LocoInfoRequest");
     // return DCCpp::sendLocoInfo(genericData);
     // Work in progress
     return true;
@@ -231,25 +214,21 @@ __declspec(dllexport) bool DDGL_LocoInfoRequest(pDGI_SERVER_PARAMS serverParams,
 
 __declspec(dllexport) bool DDGL_SetSpeed(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
 {
-    // DCCpp_utils::printDebugMessage("DDGL_SetSpeed");
     return DCCpp::setLocoSpeed(genericData);
 }
 
 __declspec(dllexport) bool DDGL_SetF0F4(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
 {
-    // DCCpp_utils::printDebugMessage("DDGL_SetF0F4");
     return DCCpp::setLocoFunction(genericData, 0x1F);
 }
 
 __declspec(dllexport) bool DDGL_SetF5F8(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
 {
-    // DCCpp_utils::printDebugMessage("DDGL_SetF5F8");
     return DCCpp::setLocoFunction(genericData, 0x01E0);
 }
 
 __declspec(dllexport) bool DDGL_SetF9F12(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
 {
-    // DCCpp_utils::printDebugMessage("DDGL_SetF9F12");
     return DCCpp::setLocoFunction(genericData, 0x1E00);
 }
 
@@ -259,79 +238,66 @@ __declspec(dllexport) bool DDGL_SetF9F12(pDGI_SERVER_PARAMS serverParams, pDGI_G
 
 __declspec(dllexport) bool DDGL_SetF0F12(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
 {
-    DCCpp_utils::printDebugMessage("DDGL_SetF0F12");
     return true;
 }
 
 __declspec(dllexport) bool DDGL_DisplayError(DGI_SERVER_PARAMS *serverParams)
 {
-    DCCpp_utils::printDebugMessage("DDGL_DisplayError");
     return true;
 }
 
 __declspec(dllexport) bool DDGL_DisplayServerStatus(DGI_SERVER_PARAMS *serverParams)
 {
-    DCCpp_utils::printDebugMessage("DDGL_DisplayServerStatus");
     return true;
 }
 
 __declspec(dllexport) bool DDGL_EnableErrorDisplay(DGI_SERVER_PARAMS *serverParams)
 {
-    DCCpp_utils::printDebugMessage("DDGL_EnableErrorDisplay");
     return true;
 }
 
 __declspec(dllexport) bool DDGL_DisplayStatistics(DGI_SERVER_PARAMS *serverParams)
 {
-    DCCpp_utils::printDebugMessage("DDGL_DisplayStatistics");
     return true;
 }
 
 __declspec(dllexport) bool DDGL_DisplayRcvBuffer(DGI_SERVER_PARAMS *serverParams)
 {
-    DCCpp_utils::printDebugMessage("DDGL_DisplayRcvBuffer");
     return true;
 }
 
 __declspec(dllexport) bool DDGL_DisplayCmdFifo(DGI_SERVER_PARAMS *serverParams)
 {
-    DCCpp_utils::printDebugMessage("DDGL_DisplayCmdFifo");
     return true;
 }
 
  __declspec(dllexport) bool DDGL_EnterServiceMode(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
 {
-    DCCpp_utils::printDebugMessage("DDGL_EnterServiceMode");
     return true;
 }
 
 __declspec(dllexport) bool DDGL_DirectCVRead(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
 {
-    DCCpp_utils::printDebugMessage("DDGL_DirectCVRead");
     return true;
 }
 
 __declspec(dllexport) bool DDGL_ServiceModeResultRequest(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
 {
-    DCCpp_utils::printDebugMessage("DDGL_ServiceModeResultRequest");
     return true;
 }
 
 __declspec(dllexport) bool DDGL_DirectCVWrite(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
 {
-    DCCpp_utils::printDebugMessage("DDGL_DirectCVWrite");
     return true;
 }
 
 __declspec(dllexport) bool DDGL_ExitServiceMode(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
 {
-    DCCpp_utils::printDebugMessage("DDGL_ExitServiceMode");
     return true;
 }
 
 __declspec(dllexport) bool DDGL_AccessoryInfoRequest(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
 {
-    DCCpp_utils::printDebugMessage("DDGL_AccessoryInfoRequest");
     return true;
 }
 
