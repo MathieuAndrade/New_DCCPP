@@ -116,7 +116,7 @@ __declspec(dllexport) bool DDGL_ResumeOperations(pDGI_SERVER_PARAMS serverParams
     int index;
 
     DCCpp_utils::printDebugMessage("DDGL_ResumeOperations");
-    success = DCCpp_commands::sendCommand(POWER_ON);
+    success = DCCpp_commands::buildCommand(POWER_ON);
 
     if(success) {
         DCCpp::initS88();
@@ -137,7 +137,7 @@ __declspec(dllexport) bool DDGL_PowerOff(pDGI_SERVER_PARAMS serverParams, pDGI_G
     bool success;
 
     //DCCpp_utils::printDebugMessage("DDGL_PowerOff");
-    success = DCCpp_commands::sendCommand(POWER_OFF);
+    success = DCCpp_commands::buildCommand(POWER_OFF);
 
     if(success) {
         index = DCCpp_utils::saveFeedbackMsg(genericData->pCmdTag, DCCpp::listOfFeedbackMsg);
@@ -154,7 +154,7 @@ __declspec(dllexport) bool DDGL_EmergencyStop(pDGI_SERVER_PARAMS serverParams, p
 
     //DCCpp_utils::printDebugMessage("DDGL_EmergencyStop");
     DCCpp::emergencyStopAllLocos();
-    success = DCCpp_commands::sendCommand(POWER_OFF);
+    success = DCCpp_commands::buildCommand(POWER_OFF);
 
     if(success) {
         index = DCCpp_utils::saveFeedbackMsg(genericData->pCmdTag, DCCpp::listOfFeedbackMsg);
@@ -174,7 +174,7 @@ __declspec(dllexport) bool DDGL_StopLoco(pDGI_SERVER_PARAMS serverParams, pDGI_G
 __declspec(dllexport) bool DDGL_CommandStationVersionRequest(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
 {
     // DCCpp_utils::printDebugMessage("DDGL_CommandStationVersionRequest");
-    DCCpp_commands::sendCommand(CMD_STATION_VERSION_REQUEST);
+    DCCpp_commands::buildCommand(CMD_STATION_VERSION_REQUEST);
     return true;
 }
 
@@ -208,17 +208,14 @@ __declspec(dllexport) bool DDGL_SetAccessoryState(pDGI_SERVER_PARAMS serverParam
 
     // DCCpp_utils::printDebugMessage("DDGL_SetAccessoryState");
 
-    if (DCCpp::powerOn)
-    {
-        args[0] = genericData->nAddress; // Accessory address
-        args[1] = genericData->nData[0] != 0; // Accessory state
+    args[0] = genericData->nAddress; // Accessory address
+    args[1] = genericData->nData[0] != 0; // Accessory state
 
-        success = DCCpp_commands::sendCommand(TURNOUT_POSITION, args);
+    success = DCCpp_commands::buildCommand(TURNOUT_POSITION, args);
 
-        if(success) {
-            index = DCCpp_utils::saveFeedbackMsg(genericData->pCmdTag, DCCpp::listOfFeedbackMsg);
-            DCCpp::handleStandaloneCommands(CMD_TURNOUT_ACTION, index);
-        }
+    if(success) {
+        index = DCCpp_utils::saveFeedbackMsg(genericData->pCmdTag, DCCpp::listOfFeedbackMsg);
+        DCCpp::handleStandaloneCommands(CMD_TURNOUT_ACTION, index);
     }
 
     return success;

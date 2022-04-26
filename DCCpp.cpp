@@ -48,7 +48,7 @@ bool DCCpp::start(DGI_SERVER_PARAMS params)
             int attempts = 0;
             do
             {
-                DCCpp_commands::sendCommand(CMD_STATION_VERSION_REQUEST);
+                DCCpp_commands::buildCommand(CMD_STATION_VERSION_REQUEST);
                 attempts++;
                 Sleep(200);
             } while (attempts < 3 && DCCpp::version.empty());
@@ -102,6 +102,7 @@ void DCCpp::stop()
             DCCpp::ws->dispatch(DCCpp_commands::waitWsCommands);
         }
 
+        DCCpp_commands::checkCmdToSend();
         DCCpp_commands::parse();
     }
 }
@@ -132,7 +133,7 @@ bool DCCpp::disconnect()
     bool success = false;
     if (DCCpp::comPort != INVALID_HANDLE_VALUE || DCCpp::comPort != nullptr || DCCpp::ws != nullptr)
     {
-        success = DCCpp_commands::sendCommand(POWER_OFF);
+        success = DCCpp_commands::buildCommand(POWER_OFF);
 
         if (success)
         {
@@ -199,7 +200,7 @@ void DCCpp::initS88()
         DCCpp::detectorStates.push_back('0');
     }
 
-    DCCpp_commands::sendCommand(INIT_S88, args);
+    DCCpp_commands::buildCommand(INIT_S88, args);
 }
 
 /*
@@ -254,7 +255,7 @@ bool DCCpp::setLocoSpeed(pDGI_GENERIC_DATA genericData)
                 args[0] = index + 1; // Register number used by command station start at 1, so, this is index of loco in list + 1
 
                 DCCpp_utils::saveLocoInfos(index, args[1], args[2], args[3]);
-                success = DCCpp_commands::sendCommand(LOCO_SPEED, args);
+                success = DCCpp_commands::buildCommand(LOCO_SPEED, args);
             }
         }
         else
@@ -262,7 +263,7 @@ bool DCCpp::setLocoSpeed(pDGI_GENERIC_DATA genericData)
             // Save loco info and get register number used by command station if is not already present in list
             args[0] = DCCpp_utils::saveLocoInfos(-1, args[1], args[2], args[3]);
 
-            success = DCCpp_commands::sendCommand(LOCO_SPEED, args);
+            success = DCCpp_commands::buildCommand(LOCO_SPEED, args);
         }
     }
     return success;
@@ -280,7 +281,7 @@ void DCCpp::emergencyStopAllLocos()
         args[1] = it->address;                               // Loco address
         args[2] = -1;                                        // Loco speed
         args[3] = it->direction;                             // Loco forward/backward
-        success = DCCpp_commands::sendCommand(LOCO_SPEED, args);
+        success = DCCpp_commands::buildCommand(LOCO_SPEED, args, true);
 
         if (success)
         {
@@ -301,7 +302,7 @@ void DCCpp::restartAllLocos()
         args[1] = it->address;                               // Loco address
         args[2] = it->speed;                                 // Loco speed
         args[3] = it->direction;                             // Loco forward/backward
-        success = DCCpp_commands::sendCommand(LOCO_SPEED, args);
+        success = DCCpp_commands::buildCommand(LOCO_SPEED, args);
 
         if (success)
         {
@@ -338,7 +339,7 @@ bool DCCpp::setLocoFunction(pDGI_GENERIC_DATA genericData, unsigned int funcMask
         DCCpp_utils::saveLocoInfos(-1, genericData->nAddress, 0, 1, args[1]);
     }
 
-    success = DCCpp_commands::sendCommand(LOCO_FUNCTION, args);
+    success = DCCpp_commands::buildCommand(LOCO_FUNCTION, args);
     return success;
 }
 
@@ -415,6 +416,7 @@ void DCCpp::handleCommandStationStatus(int state)
         // -1 for emergency
         if (DCCpp::powerOn)
         {
+            DCCpp::emergencyStopAllLocos();
             feedbackMsg.nCmdTagType = TAG_EMERGENCY_STOP;
             index = DCCpp_utils::saveFeedbackMsg(&feedbackMsg, DCCpp::listOfUnexpectedFbMsg);
             DCCpp::handleCommandStationFb(TRACK_EMERGENCY_STOP, index);

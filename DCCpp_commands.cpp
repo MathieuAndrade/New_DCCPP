@@ -8,6 +8,7 @@
 #include "DCCpp_utils.h"
 
 std::list<std::string> DCCpp_commands::cmdToParse;
+std::list<std::string> DCCpp_commands::cmdToSend;
 CMD_WT_RSP_VECTOR DCCpp_commands::listOfCmdWaitingResp;
 
 void DCCpp_commands::waitSerialCommand()
@@ -27,7 +28,7 @@ void DCCpp_commands::waitSerialCommand()
         {
             nbOfBytesRead = 0;
 
-            multipleCmdAtSameTime:
+        multipleCmdAtSameTime:
             i++;
             result = ReadFile(DCCpp::comPort, &buffer[i], 1, &nbOfBytesRead, nullptr);
             if (buffer[0] != '<')
@@ -67,20 +68,24 @@ void DCCpp_commands::waitWsCommands(const std::string &message)
     }
 }
 
-std::string DCCpp_commands::buildCommand(const DCC_CMD_TYPE &cmdType, const CMD_ARG args)
+bool DCCpp_commands::buildCommand(const DCC_CMD_TYPE &cmdType, const CMD_ARG args, bool emergency)
 {
     std::stringstream cmd;
+    std::string msg;
 
     switch (cmdType)
     {
     case POWER_ON:
         cmd << "<1>";
+        DCCpp_commands::sendCommand(cmd.str());
         break;
     case POWER_OFF:
         cmd << "<0>";
+        DCCpp_commands::sendCommand(cmd.str());
         break;
     case CMD_STATION_VERSION_REQUEST:
         cmd << "<s>";
+        DCCpp_commands::sendCommand(cmd.str());
         break;
     case TURNOUT_POSITION:
         // <T 15 1>
@@ -88,6 +93,7 @@ std::string DCCpp_commands::buildCommand(const DCC_CMD_TYPE &cmdType, const CMD_
             << " " << args[0] << " " << args[1] << ">";
         // This command need a feedback
         DCCpp_utils::saveCmdWtRsp(TURNOUT_POSITION, TURNOUT_EVENT, args);
+        DCCpp_commands::cmdToSend.push_back(cmd.str());
         break;
     case LOCO_SPEED:
         // <t 1 1 0 1>
@@ -95,6 +101,11 @@ std::string DCCpp_commands::buildCommand(const DCC_CMD_TYPE &cmdType, const CMD_
             << " " << args[0] << " " << args[1] << " " << args[2] << " " << args[3] << ">";
         // This command need a feedback
         DCCpp_utils::saveCmdWtRsp(LOCO_SPEED, LOCO_SPEED_EVENT, args);
+        if(emergency) {
+            DCCpp_commands::sendCommand(cmd.str());
+        } else {
+            DCCpp_commands::cmdToSend.push_back(cmd.str());
+        }
         break;
     case LOCO_FUNCTION:
         // <f 3 144>
@@ -102,41 +113,50 @@ std::string DCCpp_commands::buildCommand(const DCC_CMD_TYPE &cmdType, const CMD_
             << " " << args[0] << " " << args[1] << ">";
         // This command need a feedback
         DCCpp_utils::saveCmdWtRsp(LOCO_FUNCTION, LOCO_FUNCTION_EVENT, args);
+        DCCpp_commands::cmdToSend.push_back(cmd.str());
         break;
     case INIT_S88:
         // <Y 8 1>
         cmd << "<Y"
             << " " << args[0] << " " << 1 << ">"; // 1 for hexadecimal format
+        DCCpp_commands::cmdToSend.push_back(cmd.str());
         break;
     case PING:
         cmd << "<g1>";
+        DCCpp_commands::sendCommand(cmd.str());
         break;
     default:
         cmd << "";
         break;
     }
-    return cmd.str();
+    return true;
 }
 
-bool DCCpp_commands::sendCommand(const DCC_CMD_TYPE &cmdType, const CMD_ARG args)
+void DCCpp_commands::sendCommand(const std::string &command)
 {
-    int success = 0;
-    std::string command = DCCpp_commands::buildCommand(cmdType, args);
     const char *str = command.c_str();
 
     if (DCCpp::usbMode)
     {
         DWORD dwBytesWritten;
-        success = WriteFile(DCCpp::comPort, str, strlen(str), &dwBytesWritten, nullptr);
+        WriteFile(DCCpp::comPort, str, strlen(str), &dwBytesWritten, nullptr);
     }
     else if (DCCpp::ws->getReadyState() != WebSocket::CLOSED)
     {
         DCCpp::ws->send(str);
-        success = 1;
     }
 
     DCCpp_utils::printDebugMessage("DCCpp_commands::sendCommand : " + command);
-    return success == 1;
+}
+
+void DCCpp_commands::checkCmdToSend()
+{
+    if (!DCCpp_commands::cmdToSend.empty() && DCCpp::powerOn)
+    {
+        std::string command = *DCCpp_commands::cmdToSend.begin();
+        DCCpp_commands::cmdToSend.remove(command);
+        DCCpp_commands::sendCommand(command);
+    }
 }
 
 void DCCpp_commands::parse()
@@ -150,7 +170,7 @@ void DCCpp_commands::parse()
         // Remove command from stack
         DCCpp_commands::cmdToParse.remove(command);
         // Clean the command to get only important things
-        std::regex_search(command.c_str(),match,reg);
+        std::regex_search(command.c_str(), match, reg);
         // And reassign it for next steps
         command = match[0].str();
 
@@ -166,7 +186,7 @@ void DCCpp_commands::parse()
         }
         else if (command.rfind("<g1>", 1) == 0)
         {
-            DCCpp_commands::sendCommand(PING);
+            DCCpp_commands::buildCommand(PING);
         }
         else if (command.rfind("<y", 0) == 0)
         {
