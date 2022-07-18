@@ -35,13 +35,13 @@ bool DCCpp::start(DGI_SERVER_PARAMS params)
 
     powerOn = false;
     virtualThreadId = 0;
-    virtualThread = CreateThread(nullptr, 0, loop, nullptr, 0, &virtualThreadId);
 
     tryToConnect:
     success = DCCpp_dlg::runParamDlg();
     if (success)
     {
         success = DCCpp::connect();
+        virtualThread = CreateThread(nullptr, 0, loop, nullptr, 0, &virtualThreadId);
 
         if (success)
         {
@@ -61,6 +61,9 @@ bool DCCpp::start(DGI_SERVER_PARAMS params)
 
         if (!success)
         {
+            TerminateThread(virtualThread, 0);
+            virtualThread = nullptr;
+            DCCpp::closeAnyConnection();
             std::string msg = "Impossible d'etablire la connexion avec la centrale\nSouhaitez-vous reessayeer ?";
             int res = MessageBox(DCCpp::wnd, msg.c_str(), " Connexion echoue", MB_APPLMODAL | MB_RETRYCANCEL | MB_ICONWARNING);
 
@@ -137,21 +140,25 @@ bool DCCpp::disconnect()
 
         if (success)
         {
-            if (DCCpp::usbMode)
-            {
-                CloseHandle(DCCpp::comPort);
-            }
-            else
-            {
-                DCCpp::ws->close();
-                DCCpp::ws = nullptr;
-                WSACleanup();
-            }
-
-            DCCpp::version.clear();
+            DCCpp::closeAnyConnection();
         }
     }
     return success;
+}
+
+void DCCpp::closeAnyConnection() {
+    if (DCCpp::usbMode)
+    {
+        CloseHandle(DCCpp::comPort);
+    }
+    else
+    {
+        DCCpp::ws->close();
+        DCCpp::ws = nullptr;
+        WSACleanup();
+    }
+
+    DCCpp::version.clear();
 }
 
 bool DCCpp::connectToWebSocketServer()

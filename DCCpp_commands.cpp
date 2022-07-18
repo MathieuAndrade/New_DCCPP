@@ -151,7 +151,7 @@ void DCCpp_commands::sendCommand(const std::string &command)
 
 void DCCpp_commands::checkCmdToSend()
 {
-    if (!DCCpp_commands::cmdToSend.empty() && DCCpp::powerOn)
+    if (!DCCpp_commands::cmdToSend.empty() && DCCpp::commandStationStatus == 0)
     {
         std::string command = *DCCpp_commands::cmdToSend.begin();
         DCCpp_commands::cmdToSend.remove(command);
