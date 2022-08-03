@@ -32,6 +32,7 @@ class DCCpp_utils
     static void getDCCppParams();
     static void getArgs(std::string &str, CMD_ARG args);
     static int convertLocoFuncValue(int funcValue, int newValue);
+    static ULONG_PTR enableVisualStyles();
 };
 
 #endif // DCCPP_UTILS_H

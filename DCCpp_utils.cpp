@@ -365,3 +365,26 @@ void DCCpp_utils::getArgs(std::string &str, CMD_ARG args)
         index++;
     }
 }
+
+// https://stackoverflow.com/questions/4308503/how-to-enable-visual-styles-without-a-manifest
+// NOTE: It is recommended that you delay-load ComCtl32.dll (/DelayLoad:ComCtl32.dll)
+// and that you ensure this code runs before GUI components are loaded.
+// Otherwise, you may get weird issues, like black backgrounds in icons in image lists.
+ULONG_PTR DCCpp_utils::enableVisualStyles()
+{
+    TCHAR dir[MAX_PATH];
+    ULONG_PTR ulpActivationCookie = FALSE;
+    ACTCTX actCtx =
+        {
+            sizeof(actCtx),
+            ACTCTX_FLAG_RESOURCE_NAME_VALID
+                | ACTCTX_FLAG_SET_PROCESS_DEFAULT
+                | ACTCTX_FLAG_ASSEMBLY_DIRECTORY_VALID,
+            TEXT("shell32.dll"), 0, 0, dir, (LPCTSTR)124
+        };
+    UINT cch = GetSystemDirectory(dir, sizeof(dir) / sizeof(*dir));
+    if (cch >= sizeof(dir) / sizeof(*dir)) { return FALSE; /*shouldn't happen*/ }
+    dir[cch] = TEXT('\0');
+    ActivateActCtx(CreateActCtx(&actCtx), &ulpActivationCookie);
+    return ulpActivationCookie;
+}

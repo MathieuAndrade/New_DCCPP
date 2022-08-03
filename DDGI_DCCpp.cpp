@@ -17,6 +17,7 @@ bool WINAPI DllMain(HINSTANCE instance, DWORD fdwReason, LPVOID lpvReserved)
 {
     /* The return value is used for successful DLL_PROCESS_ATTACH */
     DCCpp::instance = instance;
+    DCCpp_utils::enableVisualStyles();
     return true;
 }
 
