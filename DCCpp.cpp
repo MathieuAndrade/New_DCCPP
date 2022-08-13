@@ -12,6 +12,7 @@ HINSTANCE DCCpp::instance;
 WebSocket::pointer DCCpp::ws = nullptr;
 char DCCpp::comNumber[5];
 char DCCpp::ipAddress[20];
+char DCCpp::accessoryCmdType[1];
 HANDLE DCCpp::comPort;
 std::string DCCpp::version;
 bool DCCpp::usbMode = true;
@@ -374,7 +375,7 @@ void DCCpp::handleStandaloneCommands(STANDALONE_CMD_TYPE cmdType, int feedbackMs
         DCCpp::listOfFeedbackMsg[feedbackMsgIndex].xDataItem[0].hData[0] = DCCpp::commandStationStatus;
         DCCpp::listOfFeedbackMsg[feedbackMsgIndex].nNbDataItems = 1;
         break;
-    case CMD_TURNOUT_ACTION:
+    case CMD_ACCESSORY_ACTION:
         DCCpp::listOfFeedbackMsg[feedbackMsgIndex].nRdCommand = RCV_ACCESSORY_INFO;
         DCCpp::listOfFeedbackMsg[feedbackMsgIndex].nCompletionCode = DGI_COMP_OK;
         break;
@@ -535,14 +536,29 @@ void DCCpp::handleDetectorUpdate(std::string &command)
     }
 }
 
-void DCCpp::handleTurnoutEvent(std::string &command)
+void DCCpp::handleAccessoryEvent(std::string &command)
 {
     bool found;
     CMD_WT_RSP_IT it;
     CMD_ARG args;
 
-    DCCpp_utils::removeCharsFromString(command, (char *)"<H>");
-    found = DCCpp_utils::findCmdWtRsp(it, TURNOUT_EVENT, command, 2, 0, args);
+    if((std::strcmp(DCCpp::accessoryCmdType, "a") == 0))
+    {
+        // Simple accessory mode
+        DCCpp_utils::removeCharsFromString(command, (char *)"<A/:>");
+    }
+    else if ((std::strcmp(DCCpp::accessoryCmdType, "X") == 0))
+    {
+        // Extended accessory mode
+        DCCpp_utils::removeCharsFromString(command, (char *)"<x:>");
+    }
+    else
+    {
+        // Turnout mode
+        DCCpp_utils::removeCharsFromString(command, (char *)"<H>");
+    }
+
+    found = DCCpp_utils::findCmdWtRsp(it, ACCESSORY_EVENT, command, 2, 0, args);
 
     if (found)
     {

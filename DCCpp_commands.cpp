@@ -87,12 +87,12 @@ bool DCCpp_commands::buildCommand(const DCC_CMD_TYPE &cmdType, const CMD_ARG arg
         cmd << "<s>";
         DCCpp_commands::sendCommand(cmd.str());
         break;
-    case TURNOUT_POSITION:
-        // <T 15 1>
-        cmd << "<T"
+    case ACCESSORY_OPERATION:
+        // <X 15 1>
+        cmd << "<" << DCCpp::accessoryCmdType
             << " " << args[0] << " " << args[1] << ">";
         // This command need a feedback
-        DCCpp_utils::saveCmdWtRsp(TURNOUT_POSITION, TURNOUT_EVENT, args);
+        DCCpp_utils::saveCmdWtRsp(ACCESSORY_OPERATION, ACCESSORY_EVENT, args);
         DCCpp_commands::cmdToSend.push_back(cmd.str());
         break;
     case LOCO_SPEED:
@@ -194,7 +194,7 @@ void DCCpp_commands::parse()
         }
         else if (command.rfind("<H", 0) == 0)
         {
-            DCCpp::handleTurnoutEvent(command);
+            DCCpp::handleAccessoryEvent(command);
         }
         else if (command.rfind("<T", 0) == 0 && command.size() > 9)
         {

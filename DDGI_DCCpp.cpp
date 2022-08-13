@@ -196,11 +196,11 @@ __declspec(dllexport) bool DDGL_SetAccessoryState(pDGI_SERVER_PARAMS serverParam
     args[0] = genericData->nAddress; // Accessory address
     args[1] = genericData->nData[0] != 0; // Accessory state
 
-    success = DCCpp_commands::buildCommand(TURNOUT_POSITION, args);
+    success = DCCpp_commands::buildCommand(ACCESSORY_OPERATION, args);
 
     if(success) {
         index = DCCpp_utils::saveFeedbackMsg(genericData->pCmdTag, DCCpp::listOfFeedbackMsg);
-        DCCpp::handleStandaloneCommands(CMD_TURNOUT_ACTION, index);
+        DCCpp::handleStandaloneCommands(CMD_ACCESSORY_ACTION, index);
     }
 
     return success;

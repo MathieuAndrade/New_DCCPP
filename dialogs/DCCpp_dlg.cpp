@@ -53,6 +53,19 @@ bool CALLBACK DCCpp_dlg::ParamDlgProc(HWND wnd, UINT message, WPARAM wparam, LPA
             }
         }
 
+        if((std::strcmp(DCCpp::accessoryCmdType, "a") == 0))
+        {
+            SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_A_RADIO), BM_SETCHECK, BST_CHECKED, 1);
+        }
+        else if ((std::strcmp(DCCpp::accessoryCmdType, "X") == 0))
+        {
+            SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_X_RADIO), BM_SETCHECK, BST_CHECKED, 1);
+        }
+        else
+        {
+            SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_T_RADIO), BM_SETCHECK, BST_CHECKED, 1);
+        }
+
         DCCpp_dlg::switchDlgParamMode(wnd);
         break;
 
@@ -113,10 +126,33 @@ bool CALLBACK DCCpp_dlg::ParamDlgProc(HWND wnd, UINT message, WPARAM wparam, LPA
             DCCpp::usbMode = false;
             DCCpp_dlg::switchDlgParamMode(wnd);
             break;
+        case DCCPP_PARAM_DLG_A_RADIO:
+            // Simple accessory mode
+            DCCpp::accessoryCmdType[0] = 'a';
+            break;
+        case DCCPP_PARAM_DLG_X_RADIO:
+            // Extended accessory mode
+            DCCpp::accessoryCmdType[0] = 'X';
+            break;
+        case DCCPP_PARAM_DLG_T_RADIO:
+            // Turnout mode
+            DCCpp::accessoryCmdType[0] = 'T';
+            break;
         default:
             break;
         }
         break;
+    case WM_NOTIFY:
+        switch (((LPNMHDR)lparam)->code)
+        {
+        case (UINT)NM_CLICK:
+        case (UINT)NM_RETURN:
+            ShellExecute(nullptr,  "open", ACCESSORY_CMD_TYPE_LINK, nullptr, nullptr, SW_SHOW);
+            break;
+        default:
+            break;
+        }
+        break ;
 
     case WM_CLOSE:
         EndDialog(wnd, 0);

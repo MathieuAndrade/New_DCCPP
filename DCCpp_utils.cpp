@@ -274,6 +274,7 @@ void DCCpp_utils::saveAllDCCppParams()
     WritePrivateProfileString("Default", "ip", DCCpp::ipAddress, "dccpp_config.ini");
 
     WritePrivateProfileString("Default", "mode", DCCpp::usbMode ? "true" : "false", "dccpp_config.ini");
+    WritePrivateProfileString("Default", "accessory", DCCpp::accessoryCmdType, "dccpp_config.ini");
 
     std::string s = std::to_string(DCCpp::detectorsModuleCount);
     char const *count = s.c_str();
@@ -288,6 +289,7 @@ void DCCpp_utils::getDCCppParams()
 
     GetPrivateProfileString("Default", "com", "", DCCpp::comNumber, 5, "dccpp_config.ini");
     GetPrivateProfileString("Default", "ip", "", DCCpp::ipAddress, 20, "dccpp_config.ini");
+    GetPrivateProfileString("Default", "accessory", "T", DCCpp::accessoryCmdType, 2, "dccpp_config.ini");
 
     DCCpp::detectorsModuleCount = GetPrivateProfileInt("Default", "s88_modules", 8, "dccpp_config.ini");
 }

@@ -10,8 +10,10 @@
 #define DGI_MAX_DATA_ITEMS 8
 
 #define DLL_NAME "DCCpp"
-#define DLL_VERSION "0.0.1"
+#define DLL_VERSION "1.2.0"
 #define DLL_PROTOCOL "DCC"
+
+#define ACCESSORY_CMD_TYPE_LINK "https://github.com/MathieuAndrade/DCCpp_S88/blob/main/doc/AccessoryCmdType.md"
 
 typedef enum
 {
@@ -243,7 +245,7 @@ typedef enum {
     CMD_OPERATIONS_RESUMED,
     CMD_EMERGENCY_STOP,
     CMD_STATION_STATUS,
-    CMD_TURNOUT_ACTION,
+    CMD_ACCESSORY_ACTION,
     CMD_LOCO_INFO_REQUEST,
 } STANDALONE_CMD_TYPE; // Type of commands send by CDM-Rail
 
@@ -253,7 +255,7 @@ typedef enum {
     TRACK_EMERGENCY_STOP,
     DETECTOR_INFO,
     CMD_STATION_VERSION,
-    TURNOUT_EVENT,
+    ACCESSORY_EVENT,
     LOCO_SPEED_EVENT,
     LOCO_FUNCTION_EVENT,
 } CMD_STATION_FB_TYPE; // Type of commands feedback send by command station

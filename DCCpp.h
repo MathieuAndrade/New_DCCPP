@@ -25,6 +25,7 @@ class DCCpp
     static WebSocket::pointer ws;
     static char comNumber[];
     static char ipAddress[];
+    static char accessoryCmdType[];
     static HANDLE comPort;
     static std::string version;
     static bool usbMode;
@@ -55,7 +56,7 @@ class DCCpp
     static void handleCommandStationStatus(int state);
     static void handleCommandStationVersion(std::string &command);
     static void handleDetectorUpdate(std::string &command);
-    static void handleTurnoutEvent(std::string &command);
+    static void handleAccessoryEvent(std::string &command);
     static void handleLocoEvent(std::string &command, CMD_STATION_FB_TYPE fbCmdType);
 };
 
