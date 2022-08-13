@@ -58,7 +58,7 @@ __declspec(dllexport) bool DDGL_DisplayServer(DGI_SERVER_PARAMS *serverParams)
         msg << " " << '\n';
         msg << "Version : " << DCCpp::version << '\n';
         msg << " " << '\n';
-        msg << "Nombre de modules S88 : " << DCCpp::detectorsModuleCount  << '\n';
+        msg << "Nombre de modules S88 : " << DCCpp::detectorsModuleCount << '\n';
 
         MessageBox(DCCpp::wnd, msg.str().c_str(), "Interface DCCPP", MB_APPLMODAL | MB_OK | MB_ICONINFORMATION);
     }
@@ -75,7 +75,7 @@ __declspec(dllexport) bool DDGL_GetNextExpectedResponse(pDGI_SERVER_PARAMS serve
         // Wait until message was copied
         result = DCCpp_utils::copyFbMsgToGenericData(genericRcvData, DCCpp::listOfFeedbackMsg);
 
-        if(result)
+        if (result)
         {
             // Wait until message was removed
             result = DCCpp_utils::removeFeedbackMsg(DCCpp::listOfFeedbackMsg[0], DCCpp::listOfFeedbackMsg);
@@ -92,9 +92,9 @@ __declspec(dllexport) bool DDGL_GetNextUnExpectedMessage(pDGI_SERVER_PARAMS serv
     if (!DCCpp::listOfUnexpectedFbMsg.empty())
     {
         // Wait until message was copied
-        result = DCCpp_utils::copyFbMsgToGenericData(genericRcvData, DCCpp::listOfUnexpectedFbMsg); //1977903376
+        result = DCCpp_utils::copyFbMsgToGenericData(genericRcvData, DCCpp::listOfUnexpectedFbMsg); // 1977903376
 
-        if(result)
+        if (result)
         {
             // Wait until message was removed
             result = DCCpp_utils::removeFeedbackMsg(DCCpp::listOfUnexpectedFbMsg[0], DCCpp::listOfUnexpectedFbMsg);
@@ -111,7 +111,8 @@ __declspec(dllexport) bool DDGL_ResumeOperations(pDGI_SERVER_PARAMS serverParams
 
     success = DCCpp_commands::buildCommand(POWER_ON);
 
-    if(success) {
+    if (success)
+    {
         DCCpp::initS88();
         // Wait for command station before send locos commands
         // If locos speed are send immediately, command station not handle it
@@ -131,7 +132,8 @@ __declspec(dllexport) bool DDGL_PowerOff(pDGI_SERVER_PARAMS serverParams, pDGI_G
 
     success = DCCpp_commands::buildCommand(POWER_OFF);
 
-    if(success) {
+    if (success)
+    {
         index = DCCpp_utils::saveFeedbackMsg(genericData->pCmdTag, DCCpp::listOfFeedbackMsg);
         DCCpp::handleStandaloneCommands(CMD_POWER_OFF, index);
     }
@@ -147,7 +149,8 @@ __declspec(dllexport) bool DDGL_EmergencyStop(pDGI_SERVER_PARAMS serverParams, p
     DCCpp::emergencyStopAllLocos();
     success = DCCpp_commands::buildCommand(POWER_OFF);
 
-    if(success) {
+    if (success)
+    {
         index = DCCpp_utils::saveFeedbackMsg(genericData->pCmdTag, DCCpp::listOfFeedbackMsg);
         DCCpp::handleStandaloneCommands(CMD_EMERGENCY_STOP, index);
     }
@@ -193,12 +196,13 @@ __declspec(dllexport) bool DDGL_SetAccessoryState(pDGI_SERVER_PARAMS serverParam
     bool success = false;
     CMD_ARG args;
 
-    args[0] = genericData->nAddress; // Accessory address
+    args[0] = genericData->nAddress;      // Accessory address
     args[1] = genericData->nData[0] != 0; // Accessory state
 
     success = DCCpp_commands::buildCommand(ACCESSORY_OPERATION, args);
 
-    if(success) {
+    if (success)
+    {
         index = DCCpp_utils::saveFeedbackMsg(genericData->pCmdTag, DCCpp::listOfFeedbackMsg);
         DCCpp::handleStandaloneCommands(CMD_ACCESSORY_ACTION, index);
     }
