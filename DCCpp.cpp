@@ -17,6 +17,7 @@ HANDLE DCCpp::comPort;
 std::string DCCpp::version;
 bool DCCpp::usbMode = true;
 bool DCCpp::powerOn;
+bool DCCpp::emulation = false;
 unsigned int DCCpp::commandStationStatus;
 std::string DCCpp::detectorStates;
 int DCCpp::detectorsModuleCount = 8; // 64 detectors = modulesCount * 8 (8 * 8) || 16 nibbles = modulesCount * 8 (2 * 8) || By default set to 64 detectors
@@ -33,6 +34,7 @@ bool DCCpp::start(DGI_SERVER_PARAMS params)
     bool success;
     DCCpp::wnd = params.hMainWindow;
     DCCpp_utils::getDCCppParams();
+    DCCpp::emulation = params.bEmulationMode;
 
     powerOn = false;
     virtualThreadId = 0;
@@ -199,14 +201,7 @@ void DCCpp::initS88()
     CMD_ARG args;
     args[0] = DCCpp::detectorsModuleCount;
 
-    // Clear states to prevent a multiple call of resume operations
-    DCCpp::detectorStates = "";
-
-    // Init all nibbles states to 0
-    for (int i = 0; i < (DCCpp::detectorsModuleCount * 2); ++i)
-    {
-        DCCpp::detectorStates.push_back('0');
-    }
+    DCCpp_utils::clearDetectorStates();
 
     DCCpp_commands::buildCommand(INIT_S88, args);
 }
@@ -506,7 +501,7 @@ void DCCpp::handleDetectorUpdate(std::string &command)
             FbIndex = DCCpp_utils::saveFeedbackMsg(&feedbackMsg, DCCpp::listOfUnexpectedFbMsg);
             DCCpp::handleCommandStationFb(DETECTOR_INFO, FbIndex);
 
-            // Set nb of changes to iterate if the nb of S88 changes is to high
+            // Set nb of changes to iterate if the nb of S88 changes is too high
             int changes = (nbOfChanges > DGI_MAX_DATA_ITEMS) ? DGI_MAX_DATA_ITEMS : nbOfChanges;
 
             for (int i = 0; i < changes; i++)

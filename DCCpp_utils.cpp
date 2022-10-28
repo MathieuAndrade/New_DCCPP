@@ -368,6 +368,17 @@ void DCCpp_utils::getArgs(std::string &str, CMD_ARG args)
     }
 }
 
+void DCCpp_utils::clearDetectorStates() {
+    // Clear states to prevent a multiple call of resume operations
+    DCCpp::detectorStates = "";
+
+    // Init all nibbles states to 0
+    for (int i = 0; i < (DCCpp::detectorsModuleCount * 2); ++i)
+    {
+        DCCpp::detectorStates.push_back('0');
+    }
+}
+
 // https://stackoverflow.com/questions/4308503/how-to-enable-visual-styles-without-a-manifest
 // NOTE: It is recommended that you delay-load ComCtl32.dll (/DelayLoad:ComCtl32.dll)
 // and that you ensure this code runs before GUI components are loaded.

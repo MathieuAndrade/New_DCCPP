@@ -145,7 +145,7 @@ typedef struct S_DGI_SERVER_PARAMS
     int nBdRateIndex;
     int nAddress;
     bool bSendBreak;
-    bool bEmulationMode;
+    int bEmulationMode;
     bool bDumpFile;
 
     DGI_LANGUAGE nLanguage;

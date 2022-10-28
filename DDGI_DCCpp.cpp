@@ -8,6 +8,7 @@
 #include "DDGI_Generic_lib_def.h"
 #include "DCCpp_utils.h"
 #include "DCCpp_commands.h"
+#include "DCCpp_emul.h"
 
 /*======================================================================*/
 /*                            GLOBAL DLL MAIN                           */
@@ -181,12 +182,11 @@ __declspec(dllexport) bool DDGL_CommandStationStatusRequest(pDGI_SERVER_PARAMS s
 
 __declspec(dllexport) bool DDGL_DetectorInfoRequest(pDGI_SERVER_PARAMS serverParams, pDGI_GENERIC_DATA genericData)
 {
-    // int index;
-
-    // index = DCCpp_utils::saveFeedbackMsg(genericData->pCmdTag);
-    // DCCpp::handleStandaloneCommands(DETECTOR_INFO, index);
-    // TODO: Investigate on this function
-    // DCCpp_commands::sendCommand(INIT_S88);
+    // If emulation mode is activated, we need to handle manually detector states
+    // else do nothing
+    if(DCCpp::emulation) {
+        DCCpp_emul::emulDetectorUpdate(genericData->nAddress);
+    }
     return true;
 }
 
