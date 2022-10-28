@@ -30,6 +30,7 @@ class DCCpp
     static std::string version;
     static bool usbMode;
     static bool powerOn;
+    static bool emulation;
     static unsigned int commandStationStatus;
     static std::string detectorStates;
     static int detectorsModuleCount;
