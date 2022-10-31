@@ -36,6 +36,10 @@ bool DCCpp::start(DGI_SERVER_PARAMS params)
     DCCpp_utils::getDCCppParams();
     DCCpp::emulation = params.bEmulationMode;
 
+    // Turnout command is by default to turnout mode
+    // https://github.com/MathieuAndrade/New_DCCPP/commit/312dddc75dbd694bda2098f2cda9f76b614085c1
+    DCCpp::accessoryCmdType[0] = 'T';
+
     powerOn = false;
     virtualThreadId = 0;
 

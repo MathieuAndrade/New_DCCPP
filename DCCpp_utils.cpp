@@ -289,7 +289,7 @@ void DCCpp_utils::getDCCppParams()
 
     GetPrivateProfileString("Default", "com", "", DCCpp::comNumber, 5, "dccpp_config.ini");
     GetPrivateProfileString("Default", "ip", "", DCCpp::ipAddress, 20, "dccpp_config.ini");
-    GetPrivateProfileString("Default", "accessory", "T", DCCpp::accessoryCmdType, 2, "dccpp_config.ini");
+    // GetPrivateProfileString("Default", "accessory", "T", DCCpp::accessoryCmdType, 2, "dccpp_config.ini");
 
     DCCpp::detectorsModuleCount = GetPrivateProfileInt("Default", "s88_modules", 8, "dccpp_config.ini");
 }
