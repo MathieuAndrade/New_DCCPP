@@ -43,6 +43,16 @@ bool DCCpp::start(DGI_SERVER_PARAMS params)
     powerOn = false;
     virtualThreadId = 0;
 
+    if (DCCpp::emulation)
+    {
+        virtualThread = CreateThread(nullptr, 0, loop, nullptr, 0, &virtualThreadId);
+        DCCpp_commands::buildCommand(CMD_STATION_VERSION_REQUEST);
+        DCCpp::detectorsModuleCount = 36; // For 288 detectors, Enough for testing :)
+
+        MessageBox(DCCpp::wnd, "Mode emulation", "DCCpp serveur emulation", MB_APPLMODAL | MB_OK | MB_ICONINFORMATION);
+        return true;
+    }
+
     tryToConnect:
     success = DCCpp_dlg::runParamDlg();
     if (success)
@@ -140,7 +150,7 @@ bool DCCpp::connect()
 
 bool DCCpp::disconnect()
 {
-    bool success = false;
+    bool success;
     if (DCCpp::comPort != INVALID_HANDLE_VALUE || DCCpp::comPort != nullptr || DCCpp::ws != nullptr)
     {
         success = DCCpp_commands::buildCommand(POWER_OFF);
@@ -150,10 +160,15 @@ bool DCCpp::disconnect()
             DCCpp::closeAnyConnection();
         }
     }
+    else
+    {
+        success = true;
+    }
     return success;
 }
 
-void DCCpp::closeAnyConnection() {
+void DCCpp::closeAnyConnection()
+{
     if (DCCpp::usbMode)
     {
         CloseHandle(DCCpp::comPort);
@@ -541,7 +556,7 @@ void DCCpp::handleAccessoryEvent(std::string &command)
     CMD_WT_RSP_IT it;
     CMD_ARG args;
 
-    if((std::strcmp(DCCpp::accessoryCmdType, "a") == 0))
+    if ((std::strcmp(DCCpp::accessoryCmdType, "a") == 0))
     {
         // Simple accessory mode
         DCCpp_utils::removeCharsFromString(command, (char *)"<A/:>");

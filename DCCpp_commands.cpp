@@ -6,6 +6,7 @@
 #include <regex>
 #include "DCCpp_commands.h"
 #include "DCCpp_utils.h"
+#include "DCCpp_emul.h"
 
 std::list<std::string> DCCpp_commands::cmdToParse;
 std::list<std::string> DCCpp_commands::cmdToSend;
@@ -134,6 +135,12 @@ bool DCCpp_commands::buildCommand(const DCC_CMD_TYPE &cmdType, const CMD_ARG arg
 
 void DCCpp_commands::sendCommand(const std::string &command)
 {
+    if (DCCpp::emulation) {
+        DCCpp_emul::emulResponse(command);
+        DCCpp_utils::printDebugMessage("DCCpp_commands::sendCommand : " + command);
+        return;
+    }
+
     const char *str = command.c_str();
 
     if (DCCpp::usbMode)

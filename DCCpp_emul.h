@@ -7,11 +7,14 @@
 
 #include <bitset>
 #include <cmath>
+#include <string>
+#include <algorithm>
 #include "DCCpp.h"
 
 class DCCpp_emul
 {
   public:
+    static void emulResponse(const std::string &command);
     static void emulDetectorUpdate(int address);
 };
 

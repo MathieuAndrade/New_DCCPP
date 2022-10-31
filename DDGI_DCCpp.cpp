@@ -51,7 +51,17 @@ __declspec(dllexport) bool DDGL_DisplayServer(DGI_SERVER_PARAMS *serverParams)
 {
     std::stringstream msg;
 
-    if (DCCpp::comPort != INVALID_HANDLE_VALUE || DCCpp::comPort != nullptr || DCCpp::ws != nullptr)
+    if (DCCpp::emulation) {
+
+        msg << "Mode : Emulation " << '\n';
+        msg << " " << '\n';
+        msg << "Version : " << DCCpp::version << '\n';
+        msg << " " << '\n';
+        msg << "Nombre de modules S88 : " << DCCpp::detectorsModuleCount << '\n';
+
+        MessageBox(DCCpp::wnd, msg.str().c_str(), "Interface DCCPP", MB_APPLMODAL | MB_OK | MB_ICONINFORMATION);
+    }
+    else if (DCCpp::comPort != INVALID_HANDLE_VALUE || DCCpp::comPort != nullptr || DCCpp::ws != nullptr)
     {
         msg << "Mode : " << (DCCpp::usbMode ? "USB" : "WIFI") << '\n';
         msg << " " << '\n';
