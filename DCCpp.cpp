@@ -81,7 +81,7 @@ bool DCCpp::start(DGI_SERVER_PARAMS params)
             TerminateThread(virtualThread, 0);
             virtualThread = nullptr;
             DCCpp::closeAnyConnection();
-            std::string msg = "Impossible d'etablire la connexion avec la centrale\nSouhaitez-vous reessayeer ?";
+            std::string msg = "Impossible d'etablir la connexion avec la centrale\nSouhaitez-vous reessayer ?";
             int res = MessageBox(DCCpp::wnd, msg.c_str(), " Connexion echoue", MB_APPLMODAL | MB_RETRYCANCEL | MB_ICONWARNING);
 
             if (res == IDRETRY)
