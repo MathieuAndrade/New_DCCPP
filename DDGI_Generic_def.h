@@ -14,6 +14,7 @@
 #define DLL_PROTOCOL "DCC"
 
 #define ACCESSORY_CMD_TYPE_LINK "https://github.com/MathieuAndrade/DCCpp_S88/blob/main/doc/AccessoryCmdType.md"
+#define TIMER_HELP_LINK "https://github.com/MathieuAndrade/New_DCCPP/blob/main/doc/Timer.md"
 
 typedef enum
 {
