@@ -276,9 +276,11 @@ void DCCpp_utils::saveAllDCCppParams()
     WritePrivateProfileString("Default", "mode", DCCpp::usbMode ? "true" : "false", "dccpp_config.ini");
     WritePrivateProfileString("Default", "accessory", DCCpp::accessoryCmdType, "dccpp_config.ini");
 
-    std::string s = std::to_string(DCCpp::detectorsModuleCount);
-    char const *count = s.c_str();
-    WritePrivateProfileString("Default", "s88_modules", count, "dccpp_config.ini");
+    std::string detectors = std::to_string(DCCpp::detectorsModuleCount);
+    WritePrivateProfileString("Default", "s88_modules", detectors.c_str(), "dccpp_config.ini");
+
+    std::string timer = std::to_string(DCCpp::cmdTimer);
+    WritePrivateProfileString("Default", "timer", timer.c_str(), "dccpp_config.ini");
 }
 
 void DCCpp_utils::getDCCppParams()
@@ -292,6 +294,7 @@ void DCCpp_utils::getDCCppParams()
     // GetPrivateProfileString("Default", "accessory", "T", DCCpp::accessoryCmdType, 2, "dccpp_config.ini");
 
     DCCpp::detectorsModuleCount = GetPrivateProfileInt("Default", "s88_modules", 8, "dccpp_config.ini");
+    DCCpp::cmdTimer = GetPrivateProfileInt("Default", "timer", 100, "dccpp_config.ini");
 }
 
 bool DCCpp_utils::saveCmdWtRsp(const DCC_CMD_TYPE cmdType, const CMD_STATION_FB_TYPE fbCmdType, const CMD_ARG args)

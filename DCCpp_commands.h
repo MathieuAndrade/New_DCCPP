@@ -6,6 +6,7 @@
 #define DCCPP_COMMANDS_H
 
 #include <list>
+#include <ctime>
 #include "DCCpp.h"
 
 class DCCpp_commands
@@ -14,6 +15,7 @@ class DCCpp_commands
     static std::list<std::string> cmdToParse;
     static std::list<std::string> cmdToSend;
     static CMD_WT_RSP_VECTOR listOfCmdWaitingResp;
+    static std::clock_t timeElapsedSinceLastCmd;
 
     static void parse();
     static bool buildCommand(const DCC_CMD_TYPE &cmdType, const CMD_ARG args = nullptr, bool emergency = false);

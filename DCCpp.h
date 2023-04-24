@@ -37,6 +37,7 @@ class DCCpp
     static FEEDBACK_MSG_VECTOR listOfFeedbackMsg;
     static FEEDBACK_MSG_VECTOR listOfUnexpectedFbMsg;
     static LOCO_INFOS_VECTOR listOfLocoInfos;
+    static int cmdTimer;
 
     static bool start(DGI_SERVER_PARAMS params);
     static void stop();

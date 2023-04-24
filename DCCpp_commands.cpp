@@ -11,6 +11,7 @@
 std::list<std::string> DCCpp_commands::cmdToParse;
 std::list<std::string> DCCpp_commands::cmdToSend;
 CMD_WT_RSP_VECTOR DCCpp_commands::listOfCmdWaitingResp;
+std::clock_t DCCpp_commands::timeElapsedSinceLastCmd;
 
 void DCCpp_commands::waitSerialCommand()
 {
@@ -158,11 +159,15 @@ void DCCpp_commands::sendCommand(const std::string &command)
 
 void DCCpp_commands::checkCmdToSend()
 {
-    if (!DCCpp_commands::cmdToSend.empty() && DCCpp::commandStationStatus == 0)
+    auto elapsed = (std::clock() - DCCpp_commands::timeElapsedSinceLastCmd) / (double)(CLOCKS_PER_SEC / 1000);
+
+    if (!DCCpp_commands::cmdToSend.empty() && DCCpp::commandStationStatus == 0 && elapsed > DCCpp::cmdTimer)
     {
         std::string command = *DCCpp_commands::cmdToSend.begin();
         DCCpp_commands::cmdToSend.remove(command);
         DCCpp_commands::sendCommand(command);
+
+        DCCpp_commands::timeElapsedSinceLastCmd = std::clock();
     }
 }
 

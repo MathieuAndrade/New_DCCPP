@@ -18,9 +18,9 @@ bool CALLBACK DCCpp_dlg::ParamDlgProc(HWND wnd, UINT message, WPARAM wparam, LPA
     std::list<std::string>::iterator it;
     std::stringstream temp;
 
-    // Convert int number of s88 modules to string
-    std::string s = std::to_string(DCCpp::detectorsModuleCount);
-    char const *count = s.c_str();
+    // Convert int numbers to string
+    std::string detectors = std::to_string(DCCpp::detectorsModuleCount);
+    std::string timer = std::to_string(DCCpp::cmdTimer);
 
     switch (message)
     {
@@ -35,7 +35,8 @@ bool CALLBACK DCCpp_dlg::ParamDlgProc(HWND wnd, UINT message, WPARAM wparam, LPA
         }
 
         SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_IP_EDITTEXT), WM_SETTEXT, 0, (LPARAM)DCCpp::ipAddress);
-        SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_S88_EDITTEXT), WM_SETTEXT, 0, (LPARAM)count);
+        SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_S88_EDITTEXT), WM_SETTEXT, 0, (LPARAM)detectors.c_str());
+        SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_TIMER_EDITTEXT), WM_SETTEXT, 0, (LPARAM)timer.c_str());
 
         // Init combo box list
         for (it = portList.begin(); it != portList.end(); ++it)
@@ -78,6 +79,12 @@ bool CALLBACK DCCpp_dlg::ParamDlgProc(HWND wnd, UINT message, WPARAM wparam, LPA
             break;
         case DCCPP_PARAM_DLG_CONNECTION_BUTTON:
             DCCpp::detectorsModuleCount = (int)GetDlgItemInt(wnd, DCCPP_PARAM_DLG_S88_EDITTEXT, nullptr, false);
+            DCCpp::cmdTimer = (int)GetDlgItemInt(wnd, DCCPP_PARAM_DLG_TIMER_EDITTEXT, nullptr, false);
+
+            // https://github.com/MathieuAndrade/New_DCCPP/blob/main/doc/Timer.md
+            if(DCCpp::cmdTimer > 200) {
+                DCCpp::cmdTimer = 200;
+            }
 
             SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_COM_LIST), WM_GETTEXT, (WPARAM)20, (LPARAM)DCCpp::comNumber);
             SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_IP_EDITTEXT), WM_GETTEXT, (WPARAM)20, (LPARAM)DCCpp::ipAddress);
@@ -147,7 +154,7 @@ bool CALLBACK DCCpp_dlg::ParamDlgProc(HWND wnd, UINT message, WPARAM wparam, LPA
         {
         case (UINT)NM_CLICK:
         case (UINT)NM_RETURN:
-            ShellExecute(nullptr,  "open", ACCESSORY_CMD_TYPE_LINK, nullptr, nullptr, SW_SHOW);
+            ShellExecute(nullptr,  "open", TIMER_HELP_LINK, nullptr, nullptr, SW_SHOW);
             break;
         default:
             break;

@@ -24,6 +24,7 @@ int DCCpp::detectorsModuleCount = 8; // 64 detectors = modulesCount * 8 (8 * 8) 
 FEEDBACK_MSG_VECTOR DCCpp::listOfFeedbackMsg;
 FEEDBACK_MSG_VECTOR DCCpp::listOfUnexpectedFbMsg;
 LOCO_INFOS_VECTOR DCCpp::listOfLocoInfos;
+int DCCpp::cmdTimer = 50;
 
 // Private vars
 HANDLE DCCpp::virtualThread;
