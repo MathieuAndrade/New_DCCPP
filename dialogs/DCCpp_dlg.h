@@ -11,10 +11,17 @@
 class DCCpp_dlg
 {
   public:
+    static HWND progressWnd;
+
     static bool runParamDlg();
     static bool CALLBACK ParamDlgProc(HWND wnd, UINT message, WPARAM wparam, LPARAM lparam);
     static void showInvalidParamMsg();
     static void switchDlgParamMode(HWND wnd);
+
+    static bool runProgressDlg();
+    static bool CALLBACK ProgressDlgProc(HWND wnd, UINT message, WPARAM wparam, LPARAM lparam);
+    static void setTimerOfProgressDlg(int seconds);
+    static void closeProgressDlg();
 };
 
 #endif // DDGI_DCCPP_DCCPP_DLG_H

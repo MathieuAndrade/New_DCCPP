@@ -54,7 +54,7 @@ bool DCCpp::start(DGI_SERVER_PARAMS params)
         return true;
     }
 
-    tryToConnect:
+tryToConnect:
     success = DCCpp_dlg::runParamDlg();
     if (success)
     {
@@ -63,15 +63,40 @@ bool DCCpp::start(DGI_SERVER_PARAMS params)
 
         if (success)
         {
+            DCCpp_dlg::runProgressDlg();
+
+            // In usb mode some boards take longer to start
+            // So you have to wait until they have finished their initialization
+            if(DCCpp::usbMode)
+            {
+                auto start = std::clock();
+                auto elapsed = 0.0;
+
+                while (!DCCpp_commands::cmdStationReady && elapsed < 16)
+                {
+                    // Check if one second is passed
+                    if (elapsed < ((std::clock() - start) / (double)CLOCKS_PER_SEC))
+                    {
+                        DCCpp_utils::printDebugMessage("DCCpp_commands::start -> waiting to command station get ready");
+                        elapsed += 1;
+                        DCCpp_dlg::setTimerOfProgressDlg(16 - int(elapsed));
+                    }
+                }
+            }
+
             int attempts = 0;
             do
             {
+                DCCpp_utils::printDebugMessage("DCCpp_commands::start -> try getting command station info");
                 DCCpp_commands::buildCommand(CMD_STATION_VERSION_REQUEST);
                 attempts++;
+                DCCpp_utils::printDebugMessage("DCCpp_commands::start -> command station info requested, waiting 200ms");
                 Sleep(200);
-            } while (attempts < 3 && DCCpp::version.empty());
+            } while (attempts < 6 && DCCpp::version.empty());
 
-            if (attempts >= 3 && DCCpp::version.empty())
+            DCCpp_dlg::closeProgressDlg();
+
+            if (attempts >= 6 && DCCpp::version.empty())
             {
                 success = false;
             }
@@ -182,6 +207,7 @@ void DCCpp::closeAnyConnection()
     }
 
     DCCpp::version.clear();
+    DCCpp_commands::cmdStationReady = false;
 }
 
 bool DCCpp::connectToWebSocketServer()

@@ -6,6 +6,8 @@
 #include "DCCpp_dlg.h"
 #include "DCCpp_dlg_definitions.h"
 
+HWND DCCpp_dlg::progressWnd;
+
 bool DCCpp_dlg::runParamDlg()
 {
     return DialogBoxParam(DCCpp::instance, MAKEINTRESOURCE(DCCPP_PARAM_DLG), DCCpp::wnd, (DLGPROC)DCCpp_dlg::ParamDlgProc, (LPARAM) nullptr) > 0;
@@ -54,7 +56,7 @@ bool CALLBACK DCCpp_dlg::ParamDlgProc(HWND wnd, UINT message, WPARAM wparam, LPA
             }
         }
 
-        if((std::strcmp(DCCpp::accessoryCmdType, "a") == 0))
+        if ((std::strcmp(DCCpp::accessoryCmdType, "a") == 0))
         {
             SendMessage(GetDlgItem(wnd, DCCPP_PARAM_DLG_A_RADIO), BM_SETCHECK, BST_CHECKED, 1);
         }
@@ -82,7 +84,8 @@ bool CALLBACK DCCpp_dlg::ParamDlgProc(HWND wnd, UINT message, WPARAM wparam, LPA
             DCCpp::cmdTimer = (int)GetDlgItemInt(wnd, DCCPP_PARAM_DLG_TIMER_EDITTEXT, nullptr, false);
 
             // https://github.com/MathieuAndrade/New_DCCPP/blob/main/doc/Timer.md
-            if(DCCpp::cmdTimer > 200) {
+            if (DCCpp::cmdTimer > 200)
+            {
                 DCCpp::cmdTimer = 200;
             }
 
@@ -154,12 +157,12 @@ bool CALLBACK DCCpp_dlg::ParamDlgProc(HWND wnd, UINT message, WPARAM wparam, LPA
         {
         case (UINT)NM_CLICK:
         case (UINT)NM_RETURN:
-            ShellExecute(nullptr,  "open", TIMER_HELP_LINK, nullptr, nullptr, SW_SHOW);
+            ShellExecute(nullptr, "open", TIMER_HELP_LINK, nullptr, nullptr, SW_SHOW);
             break;
         default:
             break;
         }
-        break ;
+        break;
 
     case WM_CLOSE:
         EndDialog(wnd, 0);
@@ -199,4 +202,42 @@ void DCCpp_dlg::switchDlgParamMode(HWND wnd)
         // Scan work only on USB mode
         EnableWindow(GetDlgItem(wnd, DCCPP_PARAM_DLG_SCAN_BUTTON), false);
     }
+}
+
+bool DCCpp_dlg::runProgressDlg()
+{
+    auto dlg = CreateDialogA(DCCpp::instance, MAKEINTRESOURCE(DCCPP_PROGRESS_DLG), DCCpp::wnd, (DLGPROC)DCCpp_dlg::ProgressDlgProc);
+    ShowWindow(dlg, SW_SHOW);
+    return true;
+}
+
+bool CALLBACK DCCpp_dlg::ProgressDlgProc(HWND wnd, UINT message, WPARAM wparam, LPARAM lparam)
+{
+    DCCpp_dlg::progressWnd = wnd;
+
+    switch (message)
+    {
+    case WM_INITDIALOG:
+    case WM_COMMAND:
+    case WM_NOTIFY:
+        break;
+
+    case WM_CLOSE:
+        EndDialog(wnd, 0);
+        break;
+    default:
+        return false;
+    }
+
+    return true;
+}
+
+void DCCpp_dlg::setTimerOfProgressDlg(int seconds)
+{
+    SendMessage(GetDlgItem(DCCpp_dlg::progressWnd, DCCPP_PROGRESS_DLG_TIME), WM_SETTEXT, 0, (LPARAM)std::to_string(seconds).c_str());
+}
+
+void DCCpp_dlg::closeProgressDlg()
+{
+    EndDialog(DCCpp_dlg::progressWnd, 0);
 }

@@ -16,6 +16,7 @@ class DCCpp_commands
     static std::list<std::string> cmdToSend;
     static CMD_WT_RSP_VECTOR listOfCmdWaitingResp;
     static std::clock_t timeElapsedSinceLastCmd;
+    static bool cmdStationReady;
 
     static void parse();
     static bool buildCommand(const DCC_CMD_TYPE &cmdType, const CMD_ARG args = nullptr, bool emergency = false);

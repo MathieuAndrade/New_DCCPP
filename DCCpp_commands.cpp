@@ -12,6 +12,7 @@ std::list<std::string> DCCpp_commands::cmdToParse;
 std::list<std::string> DCCpp_commands::cmdToSend;
 CMD_WT_RSP_VECTOR DCCpp_commands::listOfCmdWaitingResp;
 std::clock_t DCCpp_commands::timeElapsedSinceLastCmd;
+bool DCCpp_commands::cmdStationReady = false;
 
 void DCCpp_commands::waitSerialCommand()
 {
@@ -25,37 +26,40 @@ void DCCpp_commands::waitSerialCommand()
 
     if (result && nbOfBytesRead != 0)
     {
-        DCCpp_utils::setTimeouts(50);
         do
         {
             nbOfBytesRead = 0;
 
-        multipleCmdAtSameTime:
             i++;
             result = ReadFile(DCCpp::comPort, &buffer[i], 1, &nbOfBytesRead, nullptr);
-            if (buffer[0] != '<')
+
+            if (result && buffer[i] == '\n')
             {
-                break;
-            }
-            else if (result && buffer[i - 1] == '>')
-            {
-                msgClosed = true;
+                // DCCpp_utils::printDebugMessage("DCCpp_commands::waitSerialCommand -> buffer : " + std::string(buffer));
 
-                // Convert command char to string and save to stack
-                std::string command((char const *)buffer);
-                DCCpp_commands::cmdToParse.push_back(command);
-
-                // Reset vars for next routine (eventually)
-                memset(buffer, 0, sizeof buffer);
-                i = 0;
-
-                // Scan immediately to know if multiple message was sent from command station
-                result = ReadFile(DCCpp::comPort, &buffer[i], 1, &nbOfBytesRead, nullptr);
-                if (result && buffer[0] == '<')
+                if (strstr(buffer, "ready") || strstr(buffer, "SERIAL"))
                 {
-                    // If multiple message was send from command station, restart routine immediately
-                    msgClosed = false;
-                    goto multipleCmdAtSameTime;
+                    DCCpp_utils::printDebugMessage("DCCpp_commands::waitSerialCommand -> ready state found");
+                    DCCpp_commands::cmdStationReady = true;
+                }
+
+                if (buffer[0] == '<')
+                {
+                    msgClosed = true;
+
+                    // Convert command char to string and save to stack
+                    std::string command((const char *)buffer);
+                    DCCpp_utils::printDebugMessage("DCCpp_commands::waitSerialCommand -> received serial message : " + command);
+                    DCCpp_commands::cmdToParse.push_back(command);
+
+                    // Reset buffer
+                    strcpy(buffer, "");
+                }
+                else
+                {
+                    // Reset buffer
+                    strcpy(buffer, "");
+                    msgClosed = true;
                 }
             }
         } while (!msgClosed);
@@ -90,26 +94,40 @@ bool DCCpp_commands::buildCommand(const DCC_CMD_TYPE &cmdType, const CMD_ARG arg
         DCCpp_commands::sendCommand(cmd.str());
         break;
     case ACCESSORY_OPERATION:
+        if (!args)
+        {
+            return false;
+        }
         // <X 15 1>
-        cmd << "<" << DCCpp::accessoryCmdType
-            << " " << args[0] << " " << args[1] << ">";
+        cmd << "<" << DCCpp::accessoryCmdType << " " << args[0] << " " << args[1] << ">";
         // This command need a feedback
         DCCpp_utils::saveCmdWtRsp(ACCESSORY_OPERATION, ACCESSORY_EVENT, args);
         DCCpp_commands::cmdToSend.push_back(cmd.str());
         break;
     case LOCO_SPEED:
+        if (!args)
+        {
+            return false;
+        }
         // <t 1 1 0 1>
         cmd << "<t"
             << " " << args[0] << " " << args[1] << " " << args[2] << " " << args[3] << ">";
         // This command need a feedback
         DCCpp_utils::saveCmdWtRsp(LOCO_SPEED, LOCO_SPEED_EVENT, args);
-        if(emergency) {
+        if (emergency)
+        {
             DCCpp_commands::sendCommand(cmd.str());
-        } else {
+        }
+        else
+        {
             DCCpp_commands::cmdToSend.push_back(cmd.str());
         }
         break;
     case LOCO_FUNCTION:
+        if (!args)
+        {
+            return false;
+        }
         // <f 3 144>
         cmd << "<f"
             << " " << args[0] << " " << args[1] << ">";
@@ -118,6 +136,10 @@ bool DCCpp_commands::buildCommand(const DCC_CMD_TYPE &cmdType, const CMD_ARG arg
         DCCpp_commands::cmdToSend.push_back(cmd.str());
         break;
     case INIT_S88:
+        if (!args)
+        {
+            return false;
+        }
         // <Y 8 1>
         cmd << "<Y"
             << " " << args[0] << " " << 1 << ">"; // 1 for hexadecimal format
@@ -136,7 +158,8 @@ bool DCCpp_commands::buildCommand(const DCC_CMD_TYPE &cmdType, const CMD_ARG arg
 
 void DCCpp_commands::sendCommand(const std::string &command)
 {
-    if (DCCpp::emulation) {
+    if (DCCpp::emulation)
+    {
         DCCpp_emul::emulResponse(command);
         DCCpp_utils::printDebugMessage("DCCpp_commands::sendCommand : " + command);
         return;
@@ -148,13 +171,17 @@ void DCCpp_commands::sendCommand(const std::string &command)
     {
         DWORD dwBytesWritten;
         WriteFile(DCCpp::comPort, str, strlen(str), &dwBytesWritten, nullptr);
+        DCCpp_utils::printDebugMessage("DCCpp_commands::sendCommand : " + command);
     }
     else if (DCCpp::ws->getReadyState() != WebSocket::CLOSED)
     {
         DCCpp::ws->send(str);
+        DCCpp_utils::printDebugMessage("DCCpp_commands::sendCommand : " + command);
     }
-
-    DCCpp_utils::printDebugMessage("DCCpp_commands::sendCommand : " + command);
+    else if (DCCpp::ws->getReadyState() == WebSocket::CLOSED)
+    {
+        DCCpp_utils::printDebugMessage("DCCpp_commands::sendCommand : /!\\ Websocket server has been closed ");
+    }
 }
 
 void DCCpp_commands::checkCmdToSend()
