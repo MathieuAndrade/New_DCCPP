@@ -125,6 +125,9 @@ __declspec(dllexport) bool DDGL_ResumeOperations(pDGI_SERVER_PARAMS serverParams
     if (success)
     {
         DCCpp::initS88();
+        // Wait for command station before send locos commands
+        // If locos speed are send immediately, command station not handle it
+        Sleep(1000);
         DCCpp::restartAllLocos();
         index = DCCpp_utils::saveFeedbackMsg(genericData->pCmdTag, DCCpp::listOfFeedbackMsg);
         DCCpp::handleStandaloneCommands(CMD_OPERATIONS_RESUMED, index);
