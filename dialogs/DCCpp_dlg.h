@@ -6,6 +6,7 @@
 #define DDGI_DCCPP_DCCPP_DLG_H
 
 #define _WIN32_IE 0x0600
+
 #include <commctrl.h>
 
 class DCCpp_dlg

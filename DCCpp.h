@@ -9,6 +9,7 @@
 #include <websockets/wsclient.h>
 #include <cassert>
 #include <sstream>
+#include <cstring>
 #include <string>
 #include <vector>
 #include "DDGI_Generic_def.h"

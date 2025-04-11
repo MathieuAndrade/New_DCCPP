@@ -9,6 +9,7 @@
 
 #include <string>
 #include <vector>
+#include <stdint.h>
 
 struct Callback_Imp
 {

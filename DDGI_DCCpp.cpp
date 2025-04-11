@@ -2,6 +2,7 @@
 // Created by Mathieu Andrade on 23/05/2021.
 //
 
+#include <winsock2.h>
 #include <windows.h>
 #include <iostream>
 #include "DCCpp.h"
@@ -31,8 +32,9 @@ __declspec(dllexport) HANDLE DDGL_Register(bool bEnglish, const char **descStrin
     *descString = DLL_NAME;
     *version = DLL_VERSION;
     railProtocols[0] = DLL_PROTOCOL;
-    railProtocols[1] = nullptr;
+    railProtocols[1] = "NA";
     feedbackProtocols[0] = nullptr;
+    feedbackProtocols[1] = "NA";
     return nullptr;
 }
 
