@@ -206,7 +206,7 @@ void DCCpp_dlg::switchDlgParamMode(HWND wnd)
 
 bool DCCpp_dlg::runProgressDlg()
 {
-    auto dlg = CreateDialogA(DCCpp::instance, MAKEINTRESOURCE(DCCPP_PROGRESS_DLG), DCCpp::wnd, (DLGPROC)DCCpp_dlg::ProgressDlgProc);
+    auto dlg = CreateDialogA(DCCpp::instance, MAKEINTRESOURCE(DCCPP_PROGRESS_DLG), nullptr, (DLGPROC)DCCpp_dlg::ProgressDlgProc);
     ShowWindow(dlg, SW_SHOW);
     return true;
 }
