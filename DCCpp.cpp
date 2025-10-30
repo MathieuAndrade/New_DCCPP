@@ -362,7 +362,6 @@ void DCCpp::restartAllLocos()
 
 bool DCCpp::setLocoFunction(pDGI_GENERIC_DATA genericData, unsigned int funcMask)
 {
-    bool success;
     int index;
     CMD_ARG args;
 
@@ -384,12 +383,11 @@ bool DCCpp::setLocoFunction(pDGI_GENERIC_DATA genericData, unsigned int funcMask
     }
     else
     {
-        args[1] = (int)DCCpp_utils::getLocoFuncValue(0, funcMask);
+        args[1] = (int)(DCCpp_utils::getLocoFuncValue(0, funcMask));
         DCCpp_utils::saveLocoInfos(-1, genericData->nAddress, 0, 1, args[1]);
     }
 
-    success = DCCpp_commands::buildCommand(LOCO_FUNCTION, args);
-    return success;
+    return DCCpp_commands::buildCommand(LOCO_FUNCTION, args);
 }
 
 /*
@@ -518,7 +516,7 @@ void DCCpp::handleDetectorUpdate(std::string &command)
     int posOfs88NibblesChanges[128]; // 128 nibbles = 512 detectors
     DCC_CMD_TAG feedbackMsg;
 
-    DCCpp_utils::removeCharsFromString(command, (char *)"<y >");
+    DCCpp_utils::removeCharsFromString(command, (char *)"y ");
 
     for (int i = 0; i < (DCCpp::detectorsModuleCount * 2); ++i)
     {

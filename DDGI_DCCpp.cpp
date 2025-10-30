@@ -34,13 +34,14 @@ __declspec(dllexport) HANDLE DDGL_Register(bool bEnglish, const char **descStrin
     railProtocols[0] = DLL_PROTOCOL;
     railProtocols[1] = "NA";
     feedbackProtocols[0] = nullptr;
-    feedbackProtocols[1] = "NA";
+    feedbackProtocols[1] = "S88";
     return nullptr;
 }
 
 __declspec(dllexport) bool DDGL_StartServer(DGI_SERVER_PARAMS *serverParams)
 {
-    return DCCpp::start(*serverParams);
+    DCCpp::start(*serverParams);
+    return true;
 }
 
 __declspec(dllexport) bool DDGL_StopServer(DGI_SERVER_PARAMS *serverParams)
@@ -63,7 +64,7 @@ __declspec(dllexport) bool DDGL_DisplayServer(DGI_SERVER_PARAMS *serverParams)
 
         MessageBox(DCCpp::wnd, msg.str().c_str(), "Interface DCCPP", MB_APPLMODAL | MB_OK | MB_ICONINFORMATION);
     }
-    else if (DCCpp::comPort != INVALID_HANDLE_VALUE || DCCpp::comPort != nullptr || DCCpp::ws != nullptr)
+    else if (DCCpp::comPort != INVALID_HANDLE_VALUE || DCCpp::ws != nullptr)
     {
         msg << "Mode : " << (DCCpp::usbMode ? "USB" : "WIFI") << '\n';
         msg << " " << '\n';

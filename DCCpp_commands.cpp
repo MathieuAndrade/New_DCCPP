@@ -43,7 +43,9 @@ void DCCpp_commands::waitSerialCommand()
                     DCCpp_commands::cmdStationReady = true;
                 }
 
-                if (buffer[0] == '<')
+                // Old gen message : <$message>
+                // New gen message : -> $message
+                if (buffer[0] == '<' || (buffer[0] == '-' && buffer[1] == '>'))
                 {
                     msgClosed = true;
 
@@ -68,7 +70,9 @@ void DCCpp_commands::waitSerialCommand()
 
 void DCCpp_commands::waitWsCommands(const std::string &message)
 {
-    if (message[0] == '<' && message[message.size() - 1] == '>')
+    // Old gen message : <$message>
+    // New gen message : -> $message
+    if ((message[0] == '<' || (message[0] == '-' && message[1] == '>')) && message[message.size() - 1] == '>')
     {
         DCCpp_commands::cmdToParse.push_back(const_cast<std::string &>(message));
     }
@@ -202,48 +206,56 @@ void DCCpp_commands::parse()
 {
     if (!DCCpp_commands::cmdToParse.empty())
     {
-        const std::regex reg("\\<.*?\\>");
+        const std::regex oldGen(R"(<(.*?)>)");  // Captures only what's inside <...>
+        const std::regex newGen(R"(-> (.+))");  // Captures everything after ->
+
         std::cmatch match;
         std::string command = *DCCpp_commands::cmdToParse.begin();
 
-        // Remove command from stack
+        // Remove the command from stack
         DCCpp_commands::cmdToParse.remove(command);
-        // Clean the command to get only important things
-        std::regex_search(command.c_str(), match, reg);
-        // And reassign it for next steps
-        command = match[0].str();
 
-        DCCpp_utils::printDebugMessage(command);
+        // Try to match the old format first
+        if (std::regex_search(command.c_str(), match, oldGen) && match[1].matched) {
+            command = match[1].str();  // Capture only the inside of <...>
+        } else if (std::regex_search(command.c_str(), match, newGen) && match[1].matched) {
+            command = match[1].str();  // Capture everything after ->
+        } else {
+            // No recognized format, can be ignored or logged
+            command.clear();
+        }
 
-        if (command.rfind("<p0>", 1) == 0)
+        //DCCpp_utils::printDebugMessage(command);
+
+        if (command.rfind("p0", 0) == 0)
         {
             DCCpp::handleCommandStationStatus(-1);
         }
-        else if (command.rfind("<p1>", 1) == 0)
+        else if (command.rfind("p1", 0) == 0)
         {
             DCCpp::handleCommandStationStatus(1);
         }
-        else if (command.rfind("<g1>", 1) == 0)
+        else if (command.rfind("g1", 0) == 0)
         {
             DCCpp_commands::buildCommand(PING);
         }
-        else if (command.rfind("<y", 0) == 0)
+        else if (command.rfind('y', 0) == 0)
         {
             DCCpp::handleDetectorUpdate(command);
         }
-        else if (command.rfind("<H", 0) == 0)
+        else if (command.rfind('H', 0) == 0)
         {
             DCCpp::handleAccessoryEvent(command);
         }
-        else if (command.rfind("<T", 0) == 0 && command.size() > 9)
+        else if (command.rfind('T', 0) == 0 && command.size() < 12)
         {
             DCCpp::handleLocoEvent(command, LOCO_SPEED_EVENT);
         }
-        else if (command.rfind("<F", 0) == 0)
+        else if (command.rfind('F', 0) == 0)
         {
             DCCpp::handleLocoEvent(command, LOCO_FUNCTION_EVENT);
         }
-        else if (command.rfind("<iDCCpp", 0) == 0)
+        else if (command.rfind("iDCCpp", 0) == 0 || command.rfind("iDCC++", 0) == 0 || command.rfind("Station version", 0) == 0)
         {
             DCCpp::handleCommandStationVersion(command);
         }
